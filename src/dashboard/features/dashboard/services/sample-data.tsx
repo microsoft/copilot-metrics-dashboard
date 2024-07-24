@@ -1,0 +1,66 @@
+import { CopilotUsage } from "./copilot-metrics-service";
+
+export const sampleData: CopilotUsage[] = [
+  {
+    total_suggestions_count: 50,
+    total_acceptances_count: 40,
+    total_lines_suggested: 100,
+    total_lines_accepted: 80,
+    total_active_users: 4,
+    total_chat_acceptances: 80,
+    total_chat_turns: 50,
+    total_active_chat_users: 4,
+    day: "2024-03-18",
+    breakdown: [
+      {
+        language: "C#",
+        editor: "vs",
+        suggestions_count: 25,
+        acceptances_count: 20,
+        lines_suggested: 50,
+        lines_accepted: 40,
+        active_users: 2,
+      },
+      {
+        language: "typescript",
+        editor: "vscode",
+        suggestions_count: 25,
+        acceptances_count: 20,
+        lines_suggested: 50,
+        lines_accepted: 40,
+        active_users: 2,
+      },
+    ],
+  },
+  {
+    total_suggestions_count: 30,
+    total_acceptances_count: 15,
+    total_lines_suggested: 40,
+    total_lines_accepted: 15,
+    total_active_users: 10,
+    total_chat_acceptances: 50,
+    total_chat_turns: 40,
+    total_active_chat_users: 10,
+    day: "2024-04-19",
+    breakdown: [
+      {
+        language: "C#",
+        editor: "vs",
+        suggestions_count: 10,
+        acceptances_count: 5,
+        lines_suggested: 10,
+        lines_accepted: 5,
+        active_users: 5,
+      },
+      {
+        language: "typescript",
+        editor: "vscode",
+        suggestions_count: 20,
+        acceptances_count: 10,
+        lines_suggested: 30,
+        lines_accepted: 10,
+        active_users: 5,
+      },
+    ],
+  },
+];

@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: platform-engineering
+metadata:
+  template: platform-engineering@0.0.1
+services:
+  frontend:
+    project: ./src/dashboard
+    language: ts
+    host: appservice
+  ingestion:
+    project: ./src/background/DataIngestion
+    language: csharp
+    host: function
