@@ -46,11 +46,11 @@ You will be prompted to provide the following information:
 ```
 
 1. Download the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/overview)
-1. If you have not cloned this repo, run `azd init -t thivy/copilot-metrics-dashboard`. If you have cloned this repo, just run 'azd init' from the repo root directory.
+1. If you have not cloned this repo, run `azd init -t microsoft/copilot-metrics-dashboard`. If you have cloned this repo, just run 'azd init' from the repo root directory.
 1. Run `azd up` to provision and deploy the application
 
 ```pwsh
-azd init -t thivy/copilot-metrics-dashboard
+azd init -t microsoft/copilot-metrics-dashboard
 azd up
 
 # if you are wanting to see logs run with debug flag
