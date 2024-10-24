@@ -12,6 +12,8 @@ param githubOrganisationName string
 
 param githubAPIVersion string 
 
+param githubAPIScope string
+
 param tags object = {}
 
 var shortName = take(toLower(replace(name, '-', '')),5)
@@ -105,6 +107,10 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
           name: 'GITHUB_API_VERSION'
           value: githubAPIVersion
         }
+        {
+          name: 'GITHUB_API_SCOPE'
+          value: githubAPIScope
+        }
       ]
     }
   }
@@ -155,6 +161,10 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'GITHUB_API_VERSION'
           value: githubAPIVersion
+        }
+        {
+          name: 'GITHUB_API_SCOPE'
+          value: githubAPIScope
         }
       ]
     }

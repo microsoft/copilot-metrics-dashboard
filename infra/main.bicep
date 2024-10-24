@@ -19,6 +19,10 @@ param githubEnterpriseName string
 @minLength(1)
 param githubOrganisationName string
 
+@description('GitHub API scope: "enterprise" or "organization"')
+@allowed(['enterprise','organization'])
+param githubAPIScope string
+
 @secure()
 @description('PAT to call Github API')
 param githubToken string
@@ -51,7 +55,7 @@ module resources 'resources.bicep' = {
     githubEnterpriseName: githubEnterpriseName
     githubOrganisationName: githubOrganisationName
     githubAPIVersion: githubAPIVersion
-    
+    githubAPIScope: githubAPIScope
   }
 }
 

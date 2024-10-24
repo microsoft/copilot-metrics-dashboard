@@ -10,18 +10,18 @@ import { DataProvider } from "./dashboard-state";
 import { TimeFrameToggle } from "./filter/time-frame-toggle";
 import { Header } from "./header";
 import {
-  getCopilotMetricsForOrgs,
+  getCopilotMetrics,
   IFilter,
 } from "./services/copilot-metrics-service";
-import { getCopilotSeatsForOrgs } from "./services/copilot-seat-service";
+import { getCopilotSeats } from "./services/copilot-seat-service";
 
 export interface IProps {
   searchParams: IFilter;
 }
 
 export default async function Dashboard(props: IProps) {
-  const allDataPromise = getCopilotMetricsForOrgs(props.searchParams);
-  const usagePromise = getCopilotSeatsForOrgs();
+  const allDataPromise = getCopilotMetrics(props.searchParams);
+  const usagePromise = getCopilotSeats();
   const [allData, usage] = await Promise.all([allDataPromise, usagePromise]);
 
   if (allData.status !== "OK") {
