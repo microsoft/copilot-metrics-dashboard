@@ -1,15 +1,16 @@
 import { ServerActionResponse } from "@/features/common/server-action-response";
 import { CosmosClient } from "@azure/cosmos";
+import { DefaultAzureCredential } from "@azure/identity";
 import { stringIsNullOrEmpty } from "../utils/helpers";
 
 interface CosmosConfig {
   endpoint: string;
-  key: string;
+  //key: string;
 }
 
 export const ensureCosmosEnvConfig = (): ServerActionResponse<CosmosConfig> => {
   const endpoint = process.env.AZURE_COSMOSDB_ENDPOINT;
-  const key = process.env.AZURE_COSMOSDB_KEY;
+  //const key = process.env.AZURE_COSMOSDB_KEY;
 
   if (stringIsNullOrEmpty(endpoint)) {
     return {
@@ -23,46 +24,48 @@ export const ensureCosmosEnvConfig = (): ServerActionResponse<CosmosConfig> => {
     };
   }
 
-  if (stringIsNullOrEmpty(key)) {
-    return {
-      status: "ERROR",
-      errors: [
-        {
-          message: "Missing required environment variable for CosmosDB key",
-        },
-      ],
-    };
-  }
+  //if (stringIsNullOrEmpty(key)) {
+  //  return {
+  //    status: "ERROR",
+  //    errors: [
+  //      {
+  //        message: "Missing required environment variable for CosmosDB key",
+  //      },
+  //    ],
+  //  };
+  //}
 
   return {
     status: "OK",
     response: {
       endpoint,
-      key,
+      //key,
     },
   };
 };
 
 export const cosmosClient = () => {
   const endpoint = process.env.AZURE_COSMOSDB_ENDPOINT;
-  const key = process.env.AZURE_COSMOSDB_KEY;
+  //const key = process.env.AZURE_COSMOSDB_KEY;
 
   const response = ensureCosmosEnvConfig();
   if (response.status === "ERROR") {
     throw new Error(response.errors[0].message);
   }
 
-  return new CosmosClient({ endpoint, key });
+  //return new CosmosClient({ endpoint, key });
+  const credential = new DefaultAzureCredential();
+  return new CosmosClient({ endpoint, aadCredentials: credential });
 };
 
 export const cosmosConfiguration = (): boolean => {
   const endpoint = process.env.AZURE_COSMOSDB_ENDPOINT;
-  const key = process.env.AZURE_COSMOSDB_KEY;
+  //const key = process.env.AZURE_COSMOSDB_KEY;
 
   return (
     endpoint !== undefined &&
-    endpoint.trim() !== "" &&
-    key !== undefined &&
-    key.trim() !== ""
+    endpoint.trim() !== "" //&&
+    //key !== undefined &&
+    //key.trim() !== ""
   );
 };

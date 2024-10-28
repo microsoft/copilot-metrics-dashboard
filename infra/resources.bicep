@@ -88,8 +88,8 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
           value: 'dotnet-isolated'
         }
         {
-          name: 'AZURE_COSMOSDB_CONNECTION_STRING'
-          value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::AZURE_COSMOSDB_CONNECTION_STRING.name})'
+          name: 'AZURE_COSMOSDB_ENDPOINT__accountEndpoint'
+          value: cosmosDbAccount.properties.documentEndpoint
         }
         {
           name: 'GITHUB_TOKEN'
@@ -141,10 +141,6 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
         {
           name: 'AZURE_COSMOSDB_ENDPOINT'
           value: cosmosDbAccount.properties.documentEndpoint
-        }
-        {
-          name: 'AZURE_COSMOSDB_KEY'
-          value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=${kv::AZURE_COSMOSDB_KEY.name})'
         }
         {
           name: 'GITHUB_TOKEN'
@@ -249,22 +245,6 @@ resource kv 'Microsoft.KeyVault/vaults@2021-06-01-preview' = {
     enabledForTemplateDeployment: false
   }
 
-  resource AZURE_COSMOSDB_KEY 'secrets' = {
-    name: 'AZURE-COSMOSDB-KEY'
-    properties: {
-      contentType: 'text/plain'
-      value: cosmosDbAccount.listKeys().secondaryMasterKey
-    }
-  }
-
-  resource AZURE_COSMOSDB_CONNECTION_STRING 'secrets' = {
-    name: 'AZURE-COSMOSDB-CONNECTION-STRING'
-    properties: {
-      contentType: 'text/plain'
-      value: cosmosDbAccount.listConnectionStrings().connectionStrings[0].connectionString
-    }
-  }
-
   resource GITHUB_TOKEN 'secrets' = {
     name: 'GITHUB-TOKEN'
     properties: {
@@ -314,6 +294,26 @@ resource historyContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
         kind: 'Hash'
       }
     }
+  }
+}
+
+resource cosmosDbDataContributor 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
+  name: guid(cosmosDbAccount.id, copilotDataFunction.name, 'DataContributor')
+  parent: cosmosDbAccount
+  properties: {
+    principalId: copilotDataFunction.identity.principalId
+    roleDefinitionId: '/${subscription().id}/resourceGroups/${resourceGroup().name}/providers/Microsoft.DocumentDB/databaseAccounts/${cosmosDbAccount.name}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000002'
+    scope: cosmosDbAccount.id
+  }
+}
+
+resource cosmosDbDataReader 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
+  name: guid(cosmosDbAccount.id, webApp.name, 'DataReader')
+  parent: cosmosDbAccount
+  properties: {
+    principalId: webApp.identity.principalId
+    roleDefinitionId: '/${subscription().id}/resourceGroups/${resourceGroup().name}/providers/Microsoft.DocumentDB/databaseAccounts/${cosmosDbAccount.name}/sqlRoleDefinitions/00000000-0000-0000-0000-000000000001'
+    scope: cosmosDbAccount.id
   }
 }
 
