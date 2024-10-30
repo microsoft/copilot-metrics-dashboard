@@ -32,6 +32,8 @@ The solution accelerator is a web application that uses Azure App Service, Azure
 
 The following steps will automatically provision Azure resources and deploy the solution accelerator to Azure App Service and Azure Functions using the Azure Developer CLI.
 
+![GitHub Copilot Metrics - Architecture ](/docs/CopilotDashboard.vsdx "GitHub Copilot Metrics - Architecture")
+
 > [!IMPORTANT]
 > 🚨🚨🚨 You must setup [authentication](https://learn.microsoft.com/en-us/azure/app-service/overview-authentication-authorization) using the built-in authentication and authorization capabilities of Azure App Service.
 
