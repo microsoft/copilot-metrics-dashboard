@@ -44,17 +44,30 @@ export interface IFilter {
   endDate?: Date;
 }
 
-export const getCopilotMetricsForOrgs = async (
+export const getCopilotMetrics = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
   try {
     const isCosmosConfig = cosmosConfiguration();
-    // If we have the required environment variables, we can use the database
-    if (isCosmosConfig) {
-      return getCopilotMetricsForOrgsFromDatabase(filter);
+    switch(process.env.GITHUB_API_SCOPE) {
+      // If we have the required environment variables, we can use the enterprise API endpoint
+      case "enterprise":
+        // If we have the required environment variables, we can use the database
+        if (isCosmosConfig) {
+          return getCopilotMetricsForEnterpriseFromDatabase(filter);
+        }
+        return getCopilotMetricsForEnterpriseFromApi();
+      break;
+      
+      // As default option, we can use the organization API endpoint
+      default:
+        // If we have the required environment variables, we can use the database
+        if (isCosmosConfig) {
+          return getCopilotMetricsForOrgsFromDatabase(filter);
+        }
+        return getCopilotMetricsForOrgsFromApi();
+      break;
     }
-
-    return getCopilotMetricsForOrgsFromApi();
   } catch (e) {
     return {
       status: "ERROR",
@@ -102,6 +115,45 @@ export const getCopilotMetricsForOrgsFromApi = async (): Promise<
   }
 };
 
+export const getCopilotMetricsForEnterpriseFromApi = async (): Promise<
+  ServerActionResponse<CopilotUsageOutput[]>
+> => {
+  const env = ensureGitHubEnvConfig();
+
+  if (env.status !== "OK") {
+    return env;
+  }
+
+  const { enterprise, token, version } = env.response;
+
+  try {
+    const response = await fetch(
+      `https://api.github.com/enterprises/${enterprise}/copilot/usage`,
+      {
+        cache: "no-store",
+        headers: {
+          Accept: `application/vnd.github+json`,
+          Authorization: `Bearer ${token}`,
+          "X-GitHub-Api-Version": version,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return formatResponseError(enterprise, response);
+    }
+
+    const data = await response.json();
+    const dataWithTimeFrame = applyTimeFrameLabel(data);
+    return {
+      status: "OK",
+      response: dataWithTimeFrame,
+    };
+  } catch (e) {
+    return unknownResponseError(e);
+  }
+};
+
 export const getCopilotMetricsForOrgsFromDatabase = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
@@ -119,6 +171,51 @@ export const getCopilotMetricsForOrgsFromDatabase = async (
     end = format(filter.endDate, "yyyy-MM-dd");
   } else {
     // set the start date to today and the end date to 31 days ago
+    const todayDate = new Date();
+    const startDate = new Date(todayDate);
+    startDate.setDate(todayDate.getDate() - maximumDays);
+
+    start = format(startDate, "yyyy-MM-dd");
+    end = format(todayDate, "yyyy-MM-dd");
+  }
+
+  let querySpec: SqlQuerySpec = {
+    query: `SELECT * FROM c WHERE c.day >= @start AND c.day <= @end`,
+    parameters: [
+      { name: "@start", value: start },
+      { name: "@end", value: end },
+    ],
+  };
+
+  const { resources } = await container.items
+    .query<CopilotUsageOutput>(querySpec, {
+      maxItemCount: maxDays,
+    })
+    .fetchAll();
+
+  const dataWithTimeFrame = applyTimeFrameLabel(resources);
+  return {
+    status: "OK",
+    response: dataWithTimeFrame,
+  };
+};
+
+export const getCopilotMetricsForEnterpriseFromDatabase = async (
+  filter: IFilter
+): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
+  const client = cosmosClient();
+  const database = client.database("platform-engineering");
+  const container = database.container("history");
+
+  let start = "";
+  let end = "";
+  const maxDays = 365 * 2; // maximum 2 years of data
+  const maximumDays = 31;
+
+  if (filter.startDate && filter.endDate) {
+    start = format(filter.startDate, "yyyy-MM-dd");
+    end = format(filter.endDate, "yyyy-MM-dd");
+  } else {
     const todayDate = new Date();
     const startDate = new Date(todayDate);
     startDate.setDate(todayDate.getDate() - maximumDays);

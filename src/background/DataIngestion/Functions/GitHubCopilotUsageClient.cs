@@ -36,5 +36,28 @@ namespace Microsoft.DevOpsDashboard.DataIngestion.Functions
             var data = JsonSerializer.Deserialize<List<CopilotUsage>>(content)!;
             return data;
         }
+
+        public async Task<List<CopilotUsage>> GetCopilotMetricsForEnterpriseAsync()
+        {
+            var enterprise = Environment.GetEnvironmentVariable("GITHUB_ENTERPRISE");
+            var apiVersion = Environment.GetEnvironmentVariable("GITHUB_API_VERSION");
+            var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+
+            _httpClient.BaseAddress = new Uri($"https://api.github.com/enterprises/{enterprise}/copilot/usage");
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _httpClient.DefaultRequestHeaders.Add("X-GitHub-Api-Version", apiVersion);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "GitHubCoPilotUsageIngestion");
+
+            var response = await _httpClient.GetAsync("");
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+            }
+
+            var content = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<List<CopilotUsage>>(content)!;
+            return data;
+        }
     }
 }

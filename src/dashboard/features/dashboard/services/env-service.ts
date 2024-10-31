@@ -5,6 +5,7 @@ interface GitHubConfig {
   enterprise: string;
   token: string;
   version: string;
+  scope: string;
 }
 
 export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
@@ -12,6 +13,7 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
   const enterprise = process.env.GITHUB_ENTERPRISE;
   const token = process.env.GITHUB_TOKEN;
   const version = process.env.GITHUB_API_VERSION;
+  let scope = process.env.GITHUB_API_SCOPE;
 
   if (stringIsNullOrEmpty(organization)) {
     console.log("Missing required environment variable for organization");
@@ -60,6 +62,21 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
     };
   }
 
+  if (validateScope(scope)) {
+    return {
+      status: "ERROR",
+      errors: [
+        {
+          message: "Invalid GitHub API scope: " + scope + ". Value must be 'enterprise' or 'organization'",
+        },
+      ],
+    };
+  }
+
+  if (stringIsNullOrEmpty(scope)) {
+    scope = "organization";
+  }
+
   return {
     status: "OK",
     response: {
@@ -67,10 +84,15 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
       enterprise,
       token,
       version,
+      scope,
     },
   };
 };
 
 export const stringIsNullOrEmpty = (str: string | null | undefined) => {
   return str === null || str === undefined || str === "";
+};
+
+export const validateScope = (str: string | null | undefined) => {
+  return str !== "enterprise" && str !== "organization";
 };

@@ -5,6 +5,22 @@ import {
 import { ServerActionResponse } from "@/features/common/server-action-response";
 import { ensureGitHubEnvConfig } from "./env-service";
 
+export interface EnterpriseResponse {
+  total_seats: number;
+  seats: SeatAssignment[];
+}
+
+export interface SeatAssignment {
+  created_at: Date;
+  updated_at: Date;
+  pending_cancellation_date: Date;
+  last_activity_at: Date;
+  last_activity_editor: string;
+  plan_type: string;
+  // assignee: Assignee; - TODO
+  // assugnee_team: AssigneeTeam; - TODO
+}
+
 export interface SeatBreakdown {
   total: number;
   added_this_cycle: number;
@@ -24,7 +40,7 @@ export interface SeatManagement {
   public_code_suggestions: "block" | "allow" | "unconfigured" | "unknown";
 }
 
-export const getCopilotSeatsForOrgs = async (): Promise<
+export const getCopilotSeats = async (): Promise<
   ServerActionResponse<SeatManagement>
 > => {
   const env = ensureGitHubEnvConfig();
@@ -33,30 +49,76 @@ export const getCopilotSeatsForOrgs = async (): Promise<
     return env;
   }
 
-  const { organization, token, version } = env.response;
+  const { enterprise, organization, token, version } = env.response;
 
   try {
-    const response = await fetch(
-      `https://api.github.com/orgs/${organization}/copilot/billing`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: `application/vnd.github+json`,
-          Authorization: `Bearer ${token}`,
-          "X-GitHub-Api-Version": version,
-        },
-      }
-    );
 
-    if (!response.ok) {
-      return formatResponseError(organization, response);
+    switch (process.env.GITHUB_API_SCOPE) {
+
+      case "enterprise":
+        const enterpriseResponse = await fetch(
+          `https://api.github.com/enterprises/${enterprise}/copilot/billing/seats`,
+          {
+            cache: "no-store",
+            headers: {
+              Accept: `application/vnd.github+json`,
+              Authorization: `Bearer ${token}`,
+              "X-GitHub-Api-Version": version,
+            },
+          }
+        );
+
+        if (!enterpriseResponse.ok) {
+          return formatResponseError(enterprise, enterpriseResponse);
+        }
+
+        const enterpriseData = await enterpriseResponse.json();
+        const enterpriseSeats = enterpriseData as EnterpriseResponse;
+
+        // Copilot seats are considered active if they have been active in the last 30 days
+        const activeSeats = enterpriseSeats.seats.filter(seat => {
+          const lastActivityDate = new Date(seat.last_activity_at);
+          const thirtyDaysAgo = new Date();
+          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+          return lastActivityDate >= thirtyDaysAgo;
+        });
+
+        return {
+          status: "OK",
+          response: {
+            seat_breakdown: {
+              total: enterpriseSeats.total_seats,
+              active_this_cycle: activeSeats.length,
+              inactive_this_cycle: enterpriseSeats.total_seats - activeSeats.length,
+            }
+          } as SeatManagement,
+        };
+        break;
+
+      default:
+        const response = await fetch(
+          `https://api.github.com/orgs/${organization}/copilot/billing`,
+          {
+            cache: "no-store",
+            headers: {
+              Accept: `application/vnd.github+json`,
+              Authorization: `Bearer ${token}`,
+              "X-GitHub-Api-Version": version,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          return formatResponseError(organization, response);
+        }
+
+        const data = await response.json();
+        return {
+          status: "OK",
+          response: data as SeatManagement,
+        };
+        break;
     }
-
-    const data = await response.json();
-    return {
-      status: "OK",
-      response: data as SeatManagement,
-    };
   } catch (e) {
     return unknownResponseError(e);
   }
