@@ -1,17 +1,17 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.DevOpsDashboard.DataIngestion.Domain;
+using Microsoft.CopilotDashboard.DataIngestion.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DevOpsDashboard.DataIngestion.Functions;
+namespace Microsoft.CopilotDashboard.DataIngestion.Functions;
 
-public class CoPilotDataIngestion
+public class CopilotDataIngestion
 {
     private readonly ILogger _logger;
     private readonly GitHubCopilotUsageClient usageClient;
 
-    public CoPilotDataIngestion(ILoggerFactory loggerFactory, GitHubCopilotUsageClient usageClient)
+    public CopilotDataIngestion(ILoggerFactory loggerFactory, GitHubCopilotUsageClient usageClient)
     {
-        _logger = loggerFactory.CreateLogger<CoPilotDataIngestion>();
+        _logger = loggerFactory.CreateLogger<CopilotDataIngestion>();
         this.usageClient = usageClient;
     }
 
