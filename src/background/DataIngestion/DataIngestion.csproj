@@ -5,9 +5,9 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <RootNamespace>Microsoft.DevOpsDashboard.DataIngestion</RootNamespace>
+    <RootNamespace>Microsoft.CopilotDashboard.DataIngestion</RootNamespace>
     <UserSecretsId>96280f8a-e307-4d93-834f-b91b938e2df3</UserSecretsId>
-    <AssemblyName>Microsoft.DevOpsDashboard.DataIngestion</AssemblyName>
+    <AssemblyName>Microsoft.CopilotDashboard.DataIngestion</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="GitHub.Octokit.SDK" Version="0.0.30" />
@@ -29,9 +29,5 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="TestData\TestData.json" />
-    <EmbeddedResource Include="TestData\TestData.json" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace Microsoft.DevOpsDashboard.DataIngestion.Domain;
+namespace Microsoft.CopilotDashboard.DataIngestion.Models;
 
 public class CopilotUsage
 {
