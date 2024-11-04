@@ -16,7 +16,7 @@ public class CoPilotDataIngestion
     }
 
     [Function("GitHubCopilotDataIngestion")]
-    [CosmosDBOutput(databaseName: "platform-engineering", containerName: "history", Connection = "AZURE_COSMOSDB_CONNECTION_STRING", CreateIfNotExists = true)]
+    [CosmosDBOutput(databaseName: "platform-engineering", containerName: "history", Connection = "AZURE_COSMOSDB_ENDPOINT", CreateIfNotExists = true)]
     public async Task<List<CopilotUsage>> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
         _logger.LogInformation($"GitHubCopilotDataIngestion timer trigger function executed at: {DateTime.Now}");
