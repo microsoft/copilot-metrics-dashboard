@@ -2,7 +2,7 @@
 using Microsoft.CopilotDashboard.DataIngestion.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.CopilotDashboard.DataIngestion.Functions;
+namespace Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotUsageIngestion;
 
 public class CopilotDataIngestion
 {

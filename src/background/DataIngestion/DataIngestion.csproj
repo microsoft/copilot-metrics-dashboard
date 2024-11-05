@@ -26,8 +26,19 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <CopyToPublishDirectory>Never</CopyToPublishDirectory>
     </None>
+    <None Update="settings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TestData\Metrics\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Functions\CoPilotMetricsIngestion\TestData\EnterpriseMetricsResponse.json" />
+    <EmbeddedResource Include="Functions\CoPilotMetricsIngestion\TestData\EnterpriseMetricsResponse.json" />
   </ItemGroup>
 </Project>
