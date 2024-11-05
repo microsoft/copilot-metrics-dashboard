@@ -184,10 +184,6 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
           name: 'GITHUB_API_SCOPE'
           value: githubAPIScope
         }
-        {
-          name: 'USE_METRICS_API'
-          value: 'false'
-        }
       ]
     }
   }
