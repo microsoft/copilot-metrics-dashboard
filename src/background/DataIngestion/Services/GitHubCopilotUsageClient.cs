@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using Microsoft.CopilotDashboard.DataIngestion.Models;
 
-namespace Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotUsageIngestion
+namespace Microsoft.CopilotDashboard.DataIngestion.Services
 {
 
     public class GitHubCopilotUsageClient

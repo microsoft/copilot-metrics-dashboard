@@ -1,18 +1,19 @@
 ﻿using Microsoft.Azure.Functions.Worker;
-using Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion.Models;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.CopilotDashboard.DataIngestion.Models;
+using Microsoft.CopilotDashboard.DataIngestion.Services;
 
-namespace Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion;
+namespace Microsoft.CopilotDashboard.DataIngestion.Functions;
 
-public class CoPilotMetricsIngestionFunctions
+public class CopilotMetricsIngestion
 {
     private readonly ILogger _logger;
     private readonly GitHubCopilotMetricsClient _metricsClient;
     private readonly IOptions<GithubMetricsApiOptions> _options;
 
-    public CoPilotMetricsIngestionFunctions(
-        ILogger<CoPilotMetricsIngestionFunctions> logger, 
+    public CopilotMetricsIngestion(
+        ILogger<CopilotMetricsIngestion> logger, 
         GitHubCopilotMetricsClient metricsClient,
         IOptions<GithubMetricsApiOptions> options)
     {
@@ -22,11 +23,11 @@ public class CoPilotMetricsIngestionFunctions
     }
 
     
-    [Function("GitHubCopilotMetricsDataIngestion")]
+    [Function("GitHubCopilotMetricsIngestion")]
     [CosmosDBOutput(databaseName: "platform-engineering", containerName: "metrics_history", Connection = "AZURE_COSMOSDB_ENDPOINT", CreateIfNotExists = true)]
     public async Task<List<Metrics>> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
-        _logger.LogInformation($"GitHubCopilotDataIngestion timer trigger function executed at: {DateTime.Now}");
+        _logger.LogInformation($"GitHubCopilotMetricsIngestion timer trigger function executed at: {DateTime.Now}");
         bool.TryParse(Environment.GetEnvironmentVariable("USE_METRICS_API"), out var useMetricsApi);
 
         if (!useMetricsApi) return [];
