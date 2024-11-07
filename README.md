@@ -45,7 +45,13 @@ You will be prompted to provide the following information:
 - GitHub Organization name
 - GitHub Token
 - GitHub API Scope
+- Use Metrics API (beta - will use the GA Metrics API) )
+- Team Names (if you choose to use the new metrics API)
 ```
+
+> More details here for the [GA Metrics API](https://github.blog/changelog/2024-10-30-github-copilot-metrics-api-ga-release-now-available/)
+
+> Team Names must be a valid JSON array, e.g. ```["team-1", "team-2]```
 
 GitHub API Scope define the GITHUB_API_SCOPE environment variable that can be "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
 

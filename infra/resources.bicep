@@ -14,13 +14,19 @@ param githubAPIVersion string
 
 param githubAPIScope string
 
+param useMetricsApi bool = false
+
+param useTestData bool = false
+
+param teamNames array = []
+
 param tags object = {}
 
-var shortName = take(toLower(replace(name, '-', '')),5)
+var shortName = take(toLower(replace(name, '-', '')), 5)
 
 var cosmosName = toLower('${name}-metrics-${resourceToken}')
 var webappName = toLower('${name}-dashboard-${resourceToken}')
-var storageName =  toLower('${shortName}${resourceToken}')
+var storageName = toLower('${shortName}${resourceToken}')
 var functionAppName = toLower('${name}-ingest-${resourceToken}')
 var appserviceName = toLower('${name}-dashboard-${resourceToken}')
 
@@ -41,6 +47,7 @@ var storageDataWriterRole = subscriptionResourceId(
 
 var databaseName = 'platform-engineering'
 var orgContainerName = 'history'
+var metricsContainerName = 'metrics_history'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: appserviceName
@@ -59,6 +66,13 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   kind: 'linux'
 }
 
+var teamNameAppSettings = [
+  for (teamName, idx) in teamNames: {
+    name: 'GITHUB_METRICS__Teams__${idx}'
+    value: teamName
+  }
+]
+
 resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
   name: functionAppName
   tags: union(tags, { 'azd-service-name': 'ingestion' })
@@ -70,7 +84,7 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       alwaysOn: true
       linuxFxVersion: 'DOTNET-ISOLATED|8.0'
-      appSettings: [
+      appSettings: union(teamNameAppSettings, [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsights.properties.ConnectionString
@@ -111,7 +125,15 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
           name: 'GITHUB_API_SCOPE'
           value: githubAPIScope
         }
-      ]
+        {
+          name: 'USE_METRICS_API'
+          value: useMetricsApi
+        }
+        {
+          name: 'GITHUB_METRICS__UseTestData'
+          value: '${useTestData}'
+        }
+      ])
     }
   }
 }
@@ -290,6 +312,22 @@ resource historyContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/co
       partitionKey: {
         paths: [
           '/Month'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource metricsHistoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
+  name: metricsContainerName
+  parent: database
+  properties: {
+    resource: {
+      id: metricsContainerName
+      partitionKey: {
+        paths: [
+          '/date'
         ]
         kind: 'Hash'
       }

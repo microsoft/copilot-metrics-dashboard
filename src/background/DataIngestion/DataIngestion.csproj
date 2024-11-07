@@ -30,4 +30,8 @@
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="TestData\metrics.json" />
+    <EmbeddedResource Include="TestData\metrics.json" />
+  </ItemGroup>
 </Project>
