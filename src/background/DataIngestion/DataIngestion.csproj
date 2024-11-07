@@ -31,7 +31,7 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Functions\CoPilotMetricsIngestion\TestData\EnterpriseMetricsResponse.json" />
-    <EmbeddedResource Include="Functions\CoPilotMetricsIngestion\TestData\EnterpriseMetricsResponse.json" />
+    <None Remove="TestData\metrics.json" />
+    <EmbeddedResource Include="TestData\metrics.json" />
   </ItemGroup>
 </Project>

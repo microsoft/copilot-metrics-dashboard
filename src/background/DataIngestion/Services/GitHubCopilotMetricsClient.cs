@@ -1,8 +1,9 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
-using Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion.Models;
+using Microsoft.CopilotDashboard.DataIngestion.Functions;
+using Microsoft.CopilotDashboard.DataIngestion.Models;
 
-namespace Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion
+namespace Microsoft.CopilotDashboard.DataIngestion.Services
 {
     internal enum MetricsType
     {
@@ -53,14 +54,13 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsInges
             return metrics;
         }
 
-
         public async ValueTask<Metrics[]> GetTestCoPilotMetrics(string? team)
         {
-            await using var reader = typeof(CoPilotMetricsIngestionFunctions)
+            await using var reader = typeof(CopilotMetricsIngestion)
                     .Assembly
                     .GetManifestResourceStream(
-                        "Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion.TestData.EnterpriseMetricsResponse.json")!;
-            
+                        "Microsoft.CopilotDashboard.DataIngestion.TestData.metrics.json")!;
+
             return AddIds((await JsonSerializer.DeserializeAsync<Metrics[]>(reader))!, MetricsType.Org, "test", team);
         }
 

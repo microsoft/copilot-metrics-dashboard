@@ -1,9 +1,7 @@
 using System.Net.Http.Headers;
-using Microsoft.CopilotDashboard.DataIngestion.Functions;
-using Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotMetricsIngestion;
-using Microsoft.CopilotDashboard.DataIngestion.Functions.CoPilotUsageIngestion;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.CopilotDashboard.DataIngestion.Services;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
