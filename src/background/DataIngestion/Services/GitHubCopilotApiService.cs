@@ -46,7 +46,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
             data.Enterprise = enterprise;
             data.LastUpdate = DateTime.UtcNow;
-            data.Day = data.LastUpdate.ToString("yyyy-MM-dd");
+            data.Date = DateOnly.Parse(data.LastUpdate.ToString("yyyy-MM-dd"));
             return data;
         }
 
@@ -64,6 +64,10 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 _logger.LogError("Token is null or empty");
                 throw new ArgumentNullException(nameof(token));
             }
+            if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
+            }
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var url = $"/orgs/{organization}/copilot/billing/seats";
@@ -79,7 +83,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
             data.Organization = organization;
             data.LastUpdate = DateTime.UtcNow;
-            data.Day = data.LastUpdate.ToString("yyyy-MM-dd");
+            data.Date = DateOnly.Parse(data.LastUpdate.ToString("yyyy-MM-dd"));
             _logger.LogTrace($"Data fetched: {data}");
             return data;
         }

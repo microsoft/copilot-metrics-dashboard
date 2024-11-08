@@ -22,10 +22,10 @@ public class CopilotAssignedSeats
     }
 
     /// <summary>
-    /// Gets or sets the day for which the seats information is recorded.
+    /// Gets or sets the date for which the seats information is recorded.
     /// </summary>
-    [JsonPropertyName("day")]
-    public string Day { get; set; }
+    [JsonPropertyName("date")]
+    public DateOnly Date { get; set; }
 
     /// <summary>
     /// Gets or sets the total number of seats.
@@ -61,13 +61,13 @@ public class CopilotAssignedSeats
     {
         if (!string.IsNullOrWhiteSpace(this.Organization))
         {
-            return $"{this.Day}-ORG-{this.Organization}";
+            return $"{this.Date.ToString("yyyy-MM-d")}-ORG-{this.Organization}";
         }
         else if (!string.IsNullOrWhiteSpace(this.Enterprise))
         {
-            return $"{this.Day}-ENT-{this.Enterprise}";
+            return $"{this.Date.ToString("yyyy-MM-d")}-ENT-{this.Enterprise}";
         }
-        return $"{this.Day}-XXX";
+        return $"{this.Date.ToString("yyyy-MM-d")}-XXX";
     }
 }
 

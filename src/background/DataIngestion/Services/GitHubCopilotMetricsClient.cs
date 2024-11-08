@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Microsoft.CopilotDashboard.DataIngestion.Functions;
 using Microsoft.CopilotDashboard.DataIngestion.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CopilotDashboard.DataIngestion.Services
 {
@@ -9,15 +10,17 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
     {
         Ent,
         Org
-    } 
-    
+    }
+
     public class GitHubCopilotMetricsClient
     {
         private readonly HttpClient _httpClient;
+        private readonly ILogger _logger;
 
-        public GitHubCopilotMetricsClient(HttpClient httpClient)
+        public GitHubCopilotMetricsClient(HttpClient httpClient, ILogger<GitHubCopilotMetricsClient> logger)
         {
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public Task<Metrics[]> GetCopilotMetricsForEnterpriseAsync(string? team)
@@ -27,21 +30,21 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             var requestUri = string.IsNullOrWhiteSpace(team)
                 ? $"/enterprises/{enterprise}/copilot/metrics"
                 : $"/enterprises/{enterprise}/team/{team}/copilot/metrics";
-            
+
             return GetMetrics(requestUri, MetricsType.Ent, enterprise, team);
         }
 
-        public Task<Metrics[]> GetCopilotMetricsForOrganisationAsync(string? team)
+        public Task<Metrics[]> GetCopilotMetricsForOrganizationAsync(string? team)
         {
             var organization = Environment.GetEnvironmentVariable("GITHUB_ORGANIZATION")!;
 
             var requestUri = string.IsNullOrWhiteSpace(team)
-                ? $"/orgs/{organization}/copilot/usage"
-                : $"/orgs/{organization}/team/{team}/copilot/usage";
-            
+                ? $"/orgs/{organization}/copilot/metrics"
+                : $"/orgs/{organization}/team/{team}/copilot/metrics";
+
             return GetMetrics(requestUri, MetricsType.Org, organization, team);
         }
-        
+
         private async Task<Metrics[]> GetMetrics(string requestUri, MetricsType type, string orgOrEnterpriseName, string? team = null)
         {
             var response = await _httpClient.GetAsync(requestUri);
@@ -49,7 +52,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             {
                 throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
             }
-
+            _logger.LogInformation($"Fetched data from {requestUri}");
             var metrics = AddIds((await response.Content.ReadFromJsonAsync<Metrics[]>())!, type, orgOrEnterpriseName, team);
             return metrics;
         }

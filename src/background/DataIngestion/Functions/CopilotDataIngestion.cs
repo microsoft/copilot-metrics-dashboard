@@ -25,7 +25,7 @@ public class CopilotDataIngestion
         List<CopilotUsage> usage;
 
         var scope = Environment.GetEnvironmentVariable("GITHUB_API_SCOPE");
-        if(!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
+        if (!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
         {
             _logger.LogInformation("Fetching GitHub Copilot usage metrics for enterprise");
             usage = await usageClient.GetCopilotMetricsForEnterpriseAsync();
@@ -34,7 +34,7 @@ public class CopilotDataIngestion
         {
             _logger.LogInformation("Fetching GitHub Copilot usage metrics for organization");
             usage = await usageClient.GetCopilotMetricsForOrgsAsync();
-        }         
+        }
 
         if (myTimer.ScheduleStatus is not null)
         {

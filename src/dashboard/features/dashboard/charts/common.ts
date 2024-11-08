@@ -1,4 +1,5 @@
-import { CopilotUsageOutput } from "../services/copilot-metrics-service";
+import { Breakdown } from "@/services/copilot-metrics-service";
+import { CopilotUsageOutput } from "@/services/copilot-metrics-service";
 import { PieChartData } from "./language";
 
 export interface AcceptanceRateData {
@@ -13,7 +14,7 @@ export const computeAcceptanceAverage = (
     let cumulatedLinesAccepted = 0;
     let cumulatedLinesSuggested = 0;
 
-    item.breakdown.forEach((breakdown) => {
+    item.breakdown.forEach((breakdown: Breakdown) => {
       const { lines_accepted, lines_suggested } = breakdown;
       cumulatedLinesAccepted += lines_accepted;
       cumulatedLinesSuggested += lines_suggested;

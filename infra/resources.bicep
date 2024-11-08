@@ -8,7 +8,7 @@ param githubToken string
 
 param githubEnterpriseName string
 
-param githubOrganisationName string
+param githubOrganizationName string
 
 param githubAPIVersion string
 
@@ -48,6 +48,7 @@ var storageDataWriterRole = subscriptionResourceId(
 var databaseName = 'platform-engineering'
 var orgContainerName = 'history'
 var metricsContainerName = 'metrics_history'
+var seatsContainerName = 'seats_history'
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2020-06-01' = {
   name: appserviceName
@@ -115,7 +116,7 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
         }
         {
           name: 'GITHUB_ORGANIZATION'
-          value: githubOrganisationName
+          value: githubOrganizationName
         }
         {
           name: 'GITHUB_API_VERSION'
@@ -174,7 +175,7 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
         }
         {
           name: 'GITHUB_ORGANIZATION'
-          value: githubOrganisationName
+          value: githubOrganizationName
         }
         {
           name: 'GITHUB_API_VERSION'
@@ -325,6 +326,22 @@ resource metricsHistoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatab
   properties: {
     resource: {
       id: metricsContainerName
+      partitionKey: {
+        paths: [
+          '/date'
+        ]
+        kind: 'Hash'
+      }
+    }
+  }
+}
+
+resource seatsHistoryContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2022-05-15' = {
+  name: seatsContainerName
+  parent: database
+  properties: {
+    resource: {
+      id: seatsContainerName
       partitionKey: {
         paths: [
           '/date'
