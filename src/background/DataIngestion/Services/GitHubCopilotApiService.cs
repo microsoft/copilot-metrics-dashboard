@@ -33,6 +33,12 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 _logger.LogError("Token is null or empty");
                 throw new ArgumentNullException(nameof(token));
             }
+
+            if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
+            }
+
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var url = $"/enterprises/{enterprise}/copilot/billing/seats";
@@ -64,10 +70,12 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 _logger.LogError("Token is null or empty");
                 throw new ArgumentNullException(nameof(token));
             }
+
             if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
             {
                 _httpClient.DefaultRequestHeaders.Remove("Authorization");
             }
+
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var url = $"/orgs/{organization}/copilot/billing/seats";
