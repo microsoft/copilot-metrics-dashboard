@@ -13,7 +13,7 @@ public class CopilotMetricsIngestion
     private readonly IOptions<GithubMetricsApiOptions> _options;
 
     public CopilotMetricsIngestion(
-        ILogger<CopilotMetricsIngestion> logger, 
+        ILogger<CopilotMetricsIngestion> logger,
         GitHubCopilotMetricsClient metricsClient,
         IOptions<GithubMetricsApiOptions> options)
     {
@@ -22,34 +22,38 @@ public class CopilotMetricsIngestion
         _options = options;
     }
 
-    
+
     [Function("GitHubCopilotMetricsIngestion")]
     [CosmosDBOutput(databaseName: "platform-engineering", containerName: "metrics_history", Connection = "AZURE_COSMOSDB_ENDPOINT", CreateIfNotExists = true)]
     public async Task<List<Metrics>> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
         _logger.LogInformation($"GitHubCopilotMetricsIngestion timer trigger function executed at: {DateTime.Now}");
         bool.TryParse(Environment.GetEnvironmentVariable("USE_METRICS_API"), out var useMetricsApi);
-
+        _logger.LogInformation($"USE_METRICS_API: {useMetricsApi}");
         if (!useMetricsApi) return [];
 
         var metrics = new List<Metrics>();
-        
+
         metrics.AddRange(await ExtractMetrics());
-        
+
         var teams = _options.Value.Teams;
-        if (teams != null)
+        if (teams != null && teams.Any())
         {
             foreach (var team in teams)
             {
                 metrics.AddRange(await ExtractMetrics(team));
             }
         }
+        else
+        {
+            metrics.AddRange(await ExtractMetrics());
+        }
 
         if (myTimer.ScheduleStatus is not null)
         {
             _logger.LogInformation($"Finished ingestion. Next timer schedule at: {myTimer.ScheduleStatus.Next}");
         }
-
+        _logger.LogInformation($"Metrics count: {metrics.Count}");
         return metrics;
     }
 
@@ -61,14 +65,14 @@ public class CopilotMetricsIngestion
         }
 
         var scope = Environment.GetEnvironmentVariable("GITHUB_API_SCOPE");
-        if(!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
+        if (!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
         {
             _logger.LogInformation("Fetching GitHub Copilot usage metrics for enterprise");
             return await _metricsClient.GetCopilotMetricsForEnterpriseAsync(team);
         }
 
         _logger.LogInformation("Fetching GitHub Copilot usage metrics for organization");
-        return await _metricsClient.GetCopilotMetricsForOrganisationAsync(team);
+        return await _metricsClient.GetCopilotMetricsForOrganizationAsync(team);
     }
 
     private ValueTask<Metrics[]> LoadTestData(string? teamName)

@@ -9,17 +9,16 @@ param name string
 @description('Primary location for all resources')
 param location string
 
-
 @description('Name of GitHub enterprise')
 @minLength(1)
 param githubEnterpriseName string
 
-@description('Name of GitHub organisation')
+@description('Name of GitHub Organization')
 @minLength(1)
-param githubOrganisationName string
+param githubOrganizationName string
 
 @description('GitHub API scope: "enterprise" or "organization"')
-@allowed(['enterprise','organization'])
+@allowed(['enterprise', 'organization'])
 param githubAPIScope string
 
 @secure()
@@ -61,7 +60,7 @@ module resources 'resources.bicep' = {
     location: location
     githubToken: githubToken
     githubEnterpriseName: githubEnterpriseName
-    githubOrganisationName: githubOrganisationName
+    githubOrganizationName: githubOrganizationName
     githubAPIVersion: githubAPIVersion
     githubAPIScope: githubAPIScope
     teamNames: teamNames

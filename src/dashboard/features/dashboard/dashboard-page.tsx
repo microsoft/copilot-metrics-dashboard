@@ -9,33 +9,30 @@ import { TotalSuggestionsAndAcceptances } from "./charts/total-suggestions-and-a
 import { DataProvider } from "./dashboard-state";
 import { TimeFrameToggle } from "./filter/time-frame-toggle";
 import { Header } from "./header";
-import {
-  getCopilotMetrics,
-  IFilter,
-} from "./services/copilot-metrics-service";
-import { getCopilotSeats } from "./services/copilot-seat-service";
+import { getCopilotMetrics, IFilter as MetricsFilter } from "@/services/copilot-metrics-service";
+import { getCopilotSeatsManagement, IFilter as SeatServiceFilter } from "@/services/copilot-seat-service";
 
 export interface IProps {
-  searchParams: IFilter;
+  searchParams: MetricsFilter;
 }
 
 export default async function Dashboard(props: IProps) {
   const allDataPromise = getCopilotMetrics(props.searchParams);
-  const usagePromise = getCopilotSeats();
-  const [allData, usage] = await Promise.all([allDataPromise, usagePromise]);
+  const seatsPromise = getCopilotSeatsManagement({} as SeatServiceFilter);
+  const [allData, seats] = await Promise.all([allDataPromise, seatsPromise]);
 
   if (allData.status !== "OK") {
     return <ErrorPage error={allData.errors[0].message} />;
   }
 
-  if (usage.status !== "OK") {
-    return <ErrorPage error={usage.errors[0].message} />;
+  if (seats.status !== "OK") {
+    return <ErrorPage error={seats.errors[0].message} />;
   }
 
   return (
     <DataProvider
       copilotUsages={allData.response}
-      seatManagement={usage.response}
+      seatManagement={seats.response?.seats}
     >
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
         <Header />
