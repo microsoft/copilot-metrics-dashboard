@@ -98,13 +98,13 @@ public class Seat
     /// Gets or sets the date and time of the last activity.
     /// </summary>
     [JsonPropertyName("last_activity_at")]
-    public DateTime LastActivityAt { get; set; }
+    public DateTime? LastActivityAt { get; set; }
 
     /// <summary>
     /// Gets or sets the editor used during the last activity.
     /// </summary>
     [JsonPropertyName("last_activity_editor")]
-    public string LastActivityEditor { get; set; }
+    public string? LastActivityEditor { get; set; }
 
     /// <summary>
     /// Gets or sets the type of plan associated with the seat.
