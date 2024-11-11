@@ -13,7 +13,8 @@ import {
   getCopilotMetrics,
   IFilter,
 } from "./services/copilot-metrics-service";
-import { getCopilotSeats } from "./services/copilot-seat-service";
+import { getCopilotSeats, getCopilotSeatsAssignment } from "./services/copilot-seat-service";
+import SeatAnalysis from "./tables/seat-analysis";
 
 export interface IProps {
   searchParams: IFilter;
@@ -22,7 +23,8 @@ export interface IProps {
 export default async function Dashboard(props: IProps) {
   const allDataPromise = getCopilotMetrics(props.searchParams);
   const usagePromise = getCopilotSeats();
-  const [allData, usage] = await Promise.all([allDataPromise, usagePromise]);
+  const seatsPromise = getCopilotSeatsAssignment();
+  const [allData, usage, seats] = await Promise.all([allDataPromise, usagePromise, seatsPromise]);
 
   if (allData.status !== "OK") {
     return <ErrorPage error={allData.errors[0].message} />;
@@ -32,10 +34,15 @@ export default async function Dashboard(props: IProps) {
     return <ErrorPage error={usage.errors[0].message} />;
   }
 
+  if (seats.status !== "OK") {
+    return <ErrorPage error={seats.errors[0].message} />;
+  }
+
   return (
     <DataProvider
       copilotUsages={allData.response}
       seatManagement={usage.response}
+      copilotSeats={seats.response}
     >
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
         <Header />
@@ -52,6 +59,7 @@ export default async function Dashboard(props: IProps) {
             <Language />
             <Editor />
             <ActiveUsers />
+            <SeatAnalysis />
           </div>
         </div>
       </main>

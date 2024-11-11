@@ -5,12 +5,13 @@ import { CopilotUsageOutput } from "./services/copilot-metrics-service";
 import { formatDate } from "./utils/helpers";
 
 import { proxy, useSnapshot } from "valtio";
-import { SeatManagement } from "./services/copilot-seat-service";
+import { SeatManagement, CopilotSeats } from "./services/copilot-seat-service";
 import { groupByTimeFrame } from "./utils/data-mapper";
 
 interface IProps extends PropsWithChildren {
   copilotUsages: CopilotUsageOutput[];
   seatManagement: SeatManagement;
+  copilotSeats: CopilotSeats;
 }
 
 export interface DropdownFilterItem {
@@ -27,12 +28,14 @@ class DashboardState {
   public timeFrame: TimeFrame = "weekly";
 
   public seatManagement: SeatManagement = {} as SeatManagement;
+  public copilotSeats: CopilotSeats = {} as CopilotSeats;
 
   private apiData: CopilotUsageOutput[] = [];
 
   public initData(
     data: CopilotUsageOutput[],
-    seatManagement: SeatManagement
+    seatManagement: SeatManagement,
+    copilotSeats: CopilotSeats
   ): void {
     this.apiData = [...data];
     this.filteredData = [...data];
@@ -40,6 +43,7 @@ class DashboardState {
     this.languages = this.extractUniqueLanguages();
     this.editors = this.extractUniqueEditors();
     this.seatManagement = seatManagement;
+    this.copilotSeats = copilotSeats;
   }
 
   public filterLanguage(language: string): void {
@@ -175,7 +179,8 @@ export const DataProvider = ({
   children,
   copilotUsages,
   seatManagement,
+  copilotSeats,
 }: IProps) => {
-  dashboardStore.initData(copilotUsages, seatManagement);
+  dashboardStore.initData(copilotUsages, seatManagement, copilotSeats);
   return <>{children}</>;
 };
