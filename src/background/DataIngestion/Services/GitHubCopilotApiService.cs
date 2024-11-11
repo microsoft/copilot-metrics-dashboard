@@ -1,4 +1,5 @@
-﻿using Microsoft.CopilotDashboard.DataIngestion.Models;
+﻿using GitHub.Models;
+using Microsoft.CopilotDashboard.DataIngestion.Models;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -38,29 +39,40 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             {
                 _httpClient.DefaultRequestHeaders.Remove("Authorization");
             }
-
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var url = $"/enterprises/{enterprise}/copilot/billing/seats";
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            var allSeats = new List<Seat>(); 
+            while (url != null)
             {
-                _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
-                throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
+                    throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                }
+                var content = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
+                allSeats.AddRange(data.Seats); 
+
+                url = Helpers.GetNextPageUrl(response.Headers);
             }
-            var content = await response.Content.ReadAsStringAsync();
-            var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
-            data.Enterprise = enterprise;
-            data.LastUpdate = DateTime.UtcNow;
-            data.Date = DateOnly.Parse(data.LastUpdate.ToString("yyyy-MM-dd"));
-            return data;
+
+            return new CopilotAssignedSeats
+            {
+                TotalSeats = allSeats.Count,
+                Enterprise = enterprise,
+                LastUpdate = DateTime.UtcNow,
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
+                Seats = allSeats
+            };
+           
         }
 
         public async Task<CopilotAssignedSeats> GetOrganizationAssignedSeatsAsync(string organization)
         {
             var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")!;
             return await GetOrganizationAssignedSeatsAsync(organization, token);
-
         }
 
         public async Task<CopilotAssignedSeats> GetOrganizationAssignedSeatsAsync(string organization, string token)
@@ -75,25 +87,34 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             {
                 _httpClient.DefaultRequestHeaders.Remove("Authorization");
             }
-
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
             var url = $"/orgs/{organization}/copilot/billing/seats";
-            _logger.LogInformation($"Fetching data from {url}");
-            var response = await _httpClient.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            var allSeats = new List<Seat>();
+            while (!string.IsNullOrEmpty(url))
             {
-                _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
-                throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
+                    throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                }
+                var content = await response.Content.ReadAsStringAsync();
+                var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
+                allSeats.AddRange(data.Seats);
+
+                url = Helpers.GetNextPageUrl(response.Headers);
             }
-            var content = await response.Content.ReadAsStringAsync();
-            _logger.LogTrace(content);
-            var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
-            data.Organization = organization;
-            data.LastUpdate = DateTime.UtcNow;
-            data.Date = DateOnly.Parse(data.LastUpdate.ToString("yyyy-MM-dd"));
-            _logger.LogTrace($"Data fetched: {data}");
-            return data;
+
+            return new CopilotAssignedSeats
+            {
+                TotalSeats = allSeats.Count,
+                Organization = organization,
+                LastUpdate = DateTime.UtcNow,
+                Date = DateOnly.FromDateTime(DateTime.UtcNow),
+                Seats = allSeats
+            };
+
         }
     }
 }
