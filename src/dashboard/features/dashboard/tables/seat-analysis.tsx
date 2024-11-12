@@ -24,7 +24,7 @@ import { useDashboard } from "../dashboard-state";
 import { Seat } from "../services/copilot-seat-service";
 
 
-export default async function SeatAnalysis() {
+export default function SeatAnalysis() {
   const { copilotSeats } = useDashboard();
   const [page, setPage] = React.useState(1)
   const [itemsPerPage, setItemsPerPage] = React.useState(10)
