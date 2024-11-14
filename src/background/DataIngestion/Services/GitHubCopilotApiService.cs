@@ -53,7 +53,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 }
                 var content = await response.Content.ReadAsStringAsync();
                 var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
-                allSeats.AddRange(data.Seats); 
+                allSeats.AddRange(data.Seats!); 
 
                 url = Helpers.GetNextPageUrl(response.Headers);
             }
@@ -101,7 +101,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 }
                 var content = await response.Content.ReadAsStringAsync();
                 var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
-                allSeats.AddRange(data.Seats);
+                allSeats.AddRange(data.Seats!);
 
                 url = Helpers.GetNextPageUrl(response.Headers);
             }

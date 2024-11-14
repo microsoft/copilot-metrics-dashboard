@@ -4,9 +4,9 @@ import { ChartHeader } from "@/features/common/chart-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { stringIsNullOrEmpty } from "@/utils/helpers";
-//add function to format editor name from this string vscode/1.96.0-insider/copilot-chat/0.23.2024110503
+
 function formatEditorName(editor: string): string {
-    if(stringIsNullOrEmpty(editor)){
+    if (stringIsNullOrEmpty(editor)) {
         return editor;
     }
     const editorInfo = editor.split('/');
@@ -18,7 +18,6 @@ function formatEditorName(editor: string): string {
 export const SeatsList = () => {
     const { filteredData } = useDashboard();
     const currentData = filteredData;
-
     return (
         <Card className="col-span-4">
             <ChartHeader
