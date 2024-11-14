@@ -20,7 +20,7 @@ public class CopilotSeatsIngestion
     [Function("GitHubCopilotSeatsIngestion")]
     [CosmosDBOutput(databaseName: "platform-engineering", containerName: "seats_history", Connection = "AZURE_COSMOSDB_ENDPOINT", CreateIfNotExists = true)]
 
-    public async Task<CopilotAssignedSeats> Run([TimerTrigger("0 0/5 * * * *")] TimerInfo myTimer)
+    public async Task<CopilotAssignedSeats> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
         _logger.LogInformation($"GitHubCopilotSeatsIngestion timer trigger function executed at: {DateTime.Now}");
 
