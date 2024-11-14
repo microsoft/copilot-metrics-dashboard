@@ -28,6 +28,12 @@ public class CopilotSeatsIngestion
 
         var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")!;
         var scope = Environment.GetEnvironmentVariable("GITHUB_API_SCOPE")!;
+        Boolean.TryParse(Environment.GetEnvironmentVariable("ENABLE_SEATS_INGESTION") ?? "true", out var seatsIngestionEnabled);
+        if (!seatsIngestionEnabled)
+        {
+            _logger.LogInformation("Seats ingestion is disabled");
+            return null!;
+        }
         if (!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
         {
             var enterprise = Environment.GetEnvironmentVariable("GITHUB_ENTERPRISE")!;

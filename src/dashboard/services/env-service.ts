@@ -8,6 +8,11 @@ interface GitHubConfig {
   scope: string;
 }
 
+interface FeaturesConfig {
+  dashboard: boolean;
+  seats: boolean;
+}
+
 export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
   const organization = process.env.GITHUB_ORGANIZATION;
   const enterprise = process.env.GITHUB_ENTERPRISE;
@@ -67,7 +72,10 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
       status: "ERROR",
       errors: [
         {
-          message: "Invalid GitHub API scope: " + scope + ". Value must be 'enterprise' or 'organization'",
+          message:
+            "Invalid GitHub API scope: " +
+            scope +
+            ". Value must be 'enterprise' or 'organization'",
         },
       ],
     };
@@ -85,6 +93,18 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
       token,
       version,
       scope,
+    },
+  };
+};
+
+export const featuresEnvConfig = (): ServerActionResponse<FeaturesConfig> => {
+  const enableDashboardFeature = process.env.ENABLE_DASHBOARD_FEATURE !== "false" ? true : false;
+  const enableSeatsFeature = process.env.ENABLE_SEATS_FEATURE !== "false" ? true : false;
+  return {
+    status: "OK",
+    response: {
+      dashboard: enableDashboardFeature,
+      seats: enableSeatsFeature,
     },
   };
 };

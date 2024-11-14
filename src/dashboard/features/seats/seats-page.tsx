@@ -3,6 +3,7 @@ import { SeatsList } from "./seats-list";
 import { DataProvider } from "./seats-state";
 import { Header } from "./header";
 import { Stats } from "./stats/stats";
+import { getFeatures } from "@/utils/helpers";
 
 import {
   getCopilotSeats,
@@ -14,6 +15,13 @@ export interface IProps {
 }
 
 export default async function Dashboard(props: IProps) {
+
+  const features = getFeatures();
+
+  if (!features.seats) {
+    return <ErrorPage error="Feature not available"></ErrorPage>
+  }
+
   const seatsPromise = getCopilotSeats(props.searchParams);
   const [seats] = await Promise.all([seatsPromise]);
   if (seats.status !== "OK") {
@@ -21,10 +29,7 @@ export default async function Dashboard(props: IProps) {
   }
 
   return (
-    <DataProvider
-      copilotSeats={seats.response}
-
-    >
+    <DataProvider copilotSeats={seats.response}>
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
         <Header title="Seats" />
 

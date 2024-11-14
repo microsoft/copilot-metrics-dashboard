@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
 import { MainNavItem } from "./main-nav-item";
 import { ThemeToggle } from "./theme-toggle";
+import { getFeatures } from "@/utils/helpers";
 
 const CompanyLogo = () => {
   return (
@@ -13,24 +14,28 @@ const CompanyLogo = () => {
         src="/copilot.png"
         width={32}
         height={32}
-        alt="Picture of the author"
+        alt="GitHub Copilot Dashboard"
       />
     </MainNavItem>
-    
+
   );
 };
 
 const MenuItems = () => {
+  const features = getFeatures();
+
   return (
     <>
       <MainNavItem path="/">
         <LayoutDashboard size={18} strokeWidth={1.4} />
         Dashboard
       </MainNavItem>
-      <MainNavItem path="/seats">
-      <Users size={18} strokeWidth={1.4} />
-      Seats
-      </MainNavItem>
+      {features.seats && (
+        <MainNavItem path="/seats">
+          <Users size={18} strokeWidth={1.4} />
+          Seats
+        </MainNavItem>
+      )}
     </>
   );
 };

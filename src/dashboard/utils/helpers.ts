@@ -1,3 +1,18 @@
+import { featuresEnvConfig } from "@/services/env-service";
+
+
+export const getFeatures = () => {
+  const features = featuresEnvConfig();
+  if (features.status !== "OK") {
+    return {
+      dashboard: true,
+      seats: true
+    }
+  }
+  return features.response;
+}
+
+
 export const formatDate = (date: string) => {
   return new Date(date).toLocaleDateString("en-AU", {
     month: "short",
