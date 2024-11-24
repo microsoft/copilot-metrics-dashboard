@@ -2,8 +2,21 @@
 import { useDashboard } from "./seats-state";
 import { ChartHeader } from "@/features/common/chart-header";
 import { Card, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { stringIsNullOrEmpty } from "@/utils/helpers";
+import { DataTable } from "@/components/ui/data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
+
+interface SeatData {
+    user: string;
+    organization: string | null;
+    createdAt: string;
+    updatedAt: string;
+    lastActivityAt: string;
+    lastActivityEditor: string;
+    planType: string;
+    pendingCancellationDate: string;
+}
 
 function formatEditorName(editor: string): string {
     if (stringIsNullOrEmpty(editor)) {
@@ -15,9 +28,41 @@ function formatEditorName(editor: string): string {
     return editorName;
 }
 
+const arrayIncludes = (row: any, id: string, value: any[]) => {
+    return value.includes(row.getValue(id));
+};
+
+const stringIncludes = (row: any, id: string, value: string) => {
+    return row.getValue(id).includes(value);
+};
+
+const columns: ColumnDef<SeatData>[] = [
+    { accessorKey: "user", title: "User", filter: stringIncludes },
+    { accessorKey: "organization", title: "Organization", filter: arrayIncludes },
+    { accessorKey: "createdAt", title: "Create Date" },
+    { accessorKey: "updatedAt", title: "Update Date" },
+    { accessorKey: "lastActivityAt", title: "Last Activity Date" },
+    { accessorKey: "lastActivityEditor", title: "Last Activity Editor" },
+    { accessorKey: "planType", title: "Plan", filter: arrayIncludes },
+    { accessorKey: "pendingCancellationDate", title: "Pending Cancellation" },
+].map((col) => ({
+    accessorKey: col.accessorKey,
+    id: col.accessorKey,
+    meta: { name: col.title },
+    header: ({ column }) => (
+        <DataTableColumnHeader
+            column={column}
+            title={col.title}
+        />
+    ),
+    cell: ({ row }) => <div className="ml-2">{row.getValue(col.accessorKey)}</div>,
+    filterFn: col.filter,
+}));
+
 export const SeatsList = () => {
     const { filteredData } = useDashboard();
     const currentData = filteredData;
+    const hasOrganization = currentData?.seats.some((seat) => seat.organization);
     return (
         <Card className="col-span-4">
             <ChartHeader
@@ -25,41 +70,28 @@ export const SeatsList = () => {
                 description=""
             />
             <CardContent>
-                <Table className="min-w-full">
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Create Date</TableHead>
-                            <TableHead>Update Date</TableHead>
-                            <TableHead>Last Activity Date</TableHead>
-                            <TableHead>Last Activity Editor</TableHead>
-                            <TableHead>Plan</TableHead>
-                            <TableHead>Pending Cancellation</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {
-                            currentData?.seats?.map((data, index) => {
-                                const createdAt = new Date(data.created_at);
-                                const updatedAt = new Date(data.updated_at);
-                                const lastActivityAt = new Date(data.last_activity_at);
-                                const pendingCancellationDate = data.pending_cancellation_date ? new Date(data.pending_cancellation_date) : null;
-
-                                return (
-                                    <TableRow key={index}>
-                                        <TableCell>{data.assignee.login}</TableCell>
-                                        <TableCell>{createdAt.toLocaleDateString()}</TableCell>
-                                        <TableCell>{updatedAt.toLocaleDateString()}</TableCell>
-                                        <TableCell>{lastActivityAt.toLocaleDateString()}</TableCell>
-                                        <TableCell>{formatEditorName(data.last_activity_editor)}</TableCell>
-                                        <TableCell>{data.plan_type}</TableCell>
-                                        <TableCell>{pendingCancellationDate ? pendingCancellationDate.toLocaleDateString() : 'N/A'}</TableCell>
-                                    </TableRow>
-                                );
-                            })
-                        }
-                    </TableBody>
-                </Table>
+                <DataTable
+                    columns={columns.filter((col) => col.id !== "organization" || hasOrganization)}
+                    data={(currentData?.seats ?? []).map((seat) => ({
+                        user: seat.assignee.login,
+                        organization: seat.organization?.login,
+                        createdAt: new Date(seat.created_at).toLocaleDateString(),
+                        updatedAt: new Date(seat.updated_at).toLocaleDateString(),
+                        lastActivityAt: seat.last_activity_at ? new Date(seat.last_activity_at).toLocaleDateString() : "-",
+                        lastActivityEditor: formatEditorName(seat.last_activity_editor),
+                        planType: seat.plan_type,
+                        pendingCancellationDate: seat.pending_cancellation_date ? new Date(seat.pending_cancellation_date).toLocaleDateString() : "N/A",
+                    }))}
+                    initialVisibleColumns={{
+                        planType: false,
+                        pendingCancellationDate: false,
+                    }}
+                    search={{
+                        column: "user",
+                        placeholder: "Filter seats...",
+                    }}
+                    filters={[...(hasOrganization ? [{ column: "organization", label: "Organizations" }] : []), { column: "planType", label: "Plan Type" }]}
+                />
             </CardContent>
         </Card>
     );
