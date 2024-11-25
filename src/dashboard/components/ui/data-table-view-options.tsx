@@ -17,7 +17,7 @@ export function DataTableViewOptions<TData>({ table }: DataTableViewOptionsProps
                 <Button
                     variant="outline"
                     size="sm"
-                    className="ml-auto hidden h-8 lg:flex gap-2">
+                    className="hidden h-8 lg:flex gap-2">
                     <Settings2 className="h-4 w-4" />
                     View
                 </Button>

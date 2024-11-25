@@ -11,9 +11,10 @@ interface DataTableProps<TData, TValue> {
     initialVisibleColumns?: VisibilityState;
     search?: { column: string; placeholder: string };
     filters?: { column: string; label: string }[];
+    enableExport?: boolean;
 }
 
-export function DataTable<TData, TValue>({ columns, data, initialVisibleColumns, search, filters }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, initialVisibleColumns, search, filters, enableExport }: DataTableProps<TData, TValue>) {
     const [rowSelection, setRowSelection] = React.useState({});
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(initialVisibleColumns ?? {});
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -45,6 +46,7 @@ export function DataTable<TData, TValue>({ columns, data, initialVisibleColumns,
                 table={table}
                 search={search}
                 filters={filters}
+                enableExport={enableExport}
             />
             <div className="rounded-md border">
                 <Table>

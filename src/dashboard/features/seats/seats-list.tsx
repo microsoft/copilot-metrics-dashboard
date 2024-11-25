@@ -91,6 +91,7 @@ export const SeatsList = () => {
                         placeholder: "Filter seats...",
                     }}
                     filters={[...(hasOrganization ? [{ column: "organization", label: "Organizations" }] : []), { column: "planType", label: "Plan Type" }]}
+                    enableExport
                 />
             </CardContent>
         </Card>

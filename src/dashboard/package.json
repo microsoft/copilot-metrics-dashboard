@@ -45,6 +45,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^0.2.1",
+    "csv-stringify": "^6.5.2",
     "dashboard": "file:",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.1.6",

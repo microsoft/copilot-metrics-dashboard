@@ -6,14 +6,16 @@ import { DataTableFacetedFilter } from "./data-table-faceted-filter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableViewOptions } from "./data-table-view-options";
+import { DataTableExportOptions } from "./data-table-export-options";
 
 interface DataTableToolbarProps<TData> {
     table: Table<TData>;
     search?: { column: string; placeholder: string };
     filters?: { column: string; label: string }[];
+    enableExport?: boolean;
 }
 
-export function DataTableToolbar<TData>({ table, search, filters }: DataTableToolbarProps<TData>) {
+export function DataTableToolbar<TData>({ table, search, filters, enableExport }: DataTableToolbarProps<TData>) {
     const isFiltered = table.getState().columnFilters.length > 0;
 
     return (
@@ -44,7 +46,10 @@ export function DataTableToolbar<TData>({ table, search, filters }: DataTableToo
                     </Button>
                 )}
             </div>
-            <DataTableViewOptions table={table} />
+            <div className="flex flex-1 items-center justify-end space-x-2 ml-auto">
+                <DataTableViewOptions table={table} />
+                {enableExport && <DataTableExportOptions table={table} />}
+            </div>
         </div>
     );
 }
