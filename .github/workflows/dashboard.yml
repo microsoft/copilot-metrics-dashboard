@@ -3,8 +3,8 @@ name: Build & deploy dashboard app to Azure app service
 # When this action will be executed
 on:
   # Automatically trigger it when detected changes in repo
-  push:
-    branches: [main]
+  #push:
+  #  branches: [main]
 
   # Allow manual workflow trigger
   workflow_dispatch:
