@@ -1,19 +1,23 @@
-import { CopilotUsage } from "./copilot-metrics-service";
+import { CopilotUsage } from "@/features/common/models";
 
 export const sampleData: CopilotUsage[] = [
   {
-    total_suggestions_count: 50,
-    total_acceptances_count: 40,
-    total_lines_suggested: 100,
-    total_lines_accepted: 80,
-    total_active_users: 4,
-    total_chat_acceptances: 80,
-    total_chat_turns: 50,
-    total_active_chat_users: 4,
-    day: "2024-03-18",
+    total_active_users: 250,
+    total_engaged_users: 230,
+    total_ide_engaged_users: 240,
+    total_code_suggestions: 15450,
+    total_code_acceptances: 9845,
+    total_code_lines_suggested: 12945,
+    total_code_lines_accepted: 7456,
+    total_chat_engaged_users: 227,
+    total_chats: 3487,
+    total_chat_insertion_events: 3523,
+    total_chat_copy_events: 16534,
+    day: "2025-01-08",
     breakdown: [
       {
         language: "C#",
+        model: "default",
         editor: "vs",
         suggestions_count: 25,
         acceptances_count: 20,
@@ -23,6 +27,7 @@ export const sampleData: CopilotUsage[] = [
       },
       {
         language: "typescript",
+        model: "default",
         editor: "vscode",
         suggestions_count: 25,
         acceptances_count: 20,
@@ -33,18 +38,22 @@ export const sampleData: CopilotUsage[] = [
     ],
   },
   {
-    total_suggestions_count: 30,
-    total_acceptances_count: 15,
-    total_lines_suggested: 40,
-    total_lines_accepted: 15,
-    total_active_users: 10,
-    total_chat_acceptances: 50,
-    total_chat_turns: 40,
-    total_active_chat_users: 10,
-    day: "2024-04-19",
+    total_active_users: 250,
+    total_engaged_users: 230,
+    total_ide_engaged_users: 240,
+    total_code_suggestions: 15450,
+    total_code_acceptances: 9845,
+    total_code_lines_suggested: 12945,
+    total_code_lines_accepted: 7456,
+    total_chat_engaged_users: 227,
+    total_chats: 3487,
+    total_chat_insertion_events: 3523,
+    total_chat_copy_events: 16534,
+    day: "2025-01-07",
     breakdown: [
       {
         language: "C#",
+        model: "default",
         editor: "vs",
         suggestions_count: 10,
         acceptances_count: 5,
@@ -54,6 +63,7 @@ export const sampleData: CopilotUsage[] = [
       },
       {
         language: "typescript",
+        model: "default",
         editor: "vscode",
         suggestions_count: 20,
         acceptances_count: 10,
