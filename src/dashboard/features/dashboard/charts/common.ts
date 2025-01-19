@@ -1,5 +1,4 @@
-import { Breakdown } from "@/services/copilot-metrics-service";
-import { CopilotUsageOutput } from "@/services/copilot-metrics-service";
+import { Breakdown, CopilotUsageOutput } from "@/features/common/models";
 import { PieChartData } from "./language";
 
 export interface AcceptanceRateData {
@@ -46,7 +45,7 @@ export function getActiveUsers(
   const rates = filteredData.map((item) => {
     return {
       totalUsers: item.total_active_users,
-      totalChatUsers: item.total_active_chat_users,
+      totalChatUsers: item.total_chat_engaged_users,
       timeFrameDisplay: item.time_frame_display,
     };
   });

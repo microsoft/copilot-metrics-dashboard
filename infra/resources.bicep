@@ -14,8 +14,6 @@ param githubAPIVersion string
 
 param githubAPIScope string
 
-param useMetricsApi bool = false
-
 param useTestData bool = false
 
 param teamNames array = []
@@ -125,10 +123,6 @@ resource copilotDataFunction 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'GITHUB_API_SCOPE'
           value: githubAPIScope
-        }
-        {
-          name: 'USE_METRICS_API'
-          value: useMetricsApi
         }
         {
           name: 'GITHUB_METRICS__UseTestData'

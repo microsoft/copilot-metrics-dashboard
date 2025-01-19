@@ -1,7 +1,7 @@
 "use client";
 
 import { PropsWithChildren } from "react";
-import { Breakdown, CopilotUsageOutput } from "@/services/copilot-metrics-service";
+import { Breakdown, CopilotUsageOutput } from "@/features/common/models";
 import { formatDate } from "@/utils/helpers";
 
 import { proxy, useSnapshot } from "valtio";
