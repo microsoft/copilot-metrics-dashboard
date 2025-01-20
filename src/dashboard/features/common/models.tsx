@@ -154,7 +154,7 @@ export interface SeatBreakdown {
     is_custom_model: boolean;
     custom_model_training_date: string | null;
     total_engaged_users: number;
-    languages: LanguageMetrics[];
+    languages?: LanguageMetrics[];
     total_chats?: number;
     total_chat_insertion_events?: number;
     total_chat_copy_events?: number;
