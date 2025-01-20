@@ -74,6 +74,6 @@ public class CopilotMetricsIngestion
 
     private ValueTask<Metrics[]> LoadTestData(string? teamName)
     {
-        return _metricsClient.GetTestCoPilotMetrics(teamName);
+        return _metricsClient.GetTestCopilotMetrics(teamName);
     }
 }

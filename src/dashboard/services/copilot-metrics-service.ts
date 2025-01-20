@@ -91,9 +91,7 @@ export const getCopilotMetricsFromApi = async (filter: IFilter): Promise<
         status: "OK",
         response: dataWithTimeFrame,
       };
-    }
-
-    else {
+    } else {
       const response = await fetch(
         `https://api.github.com/orgs/${filter.organization}/copilot/metrics`,
         {
@@ -148,12 +146,33 @@ export const getCopilotMetricsFromDatabase = async (
   }
 
   let querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c.day >= @start AND c.day <= @end`,
+    query: `SELECT * FROM c WHERE c.date >= @start AND c.date <= @end`,
     parameters: [
       { name: "@start", value: start },
       { name: "@end", value: end },
     ],
   };
+
+  if (filter.enterprise) {
+    querySpec.query += ` AND c.enterprise = @enterprise`;
+    querySpec.parameters?.push({
+      name: "@enterprise",
+      value: filter.enterprise,
+    });
+  }
+
+  if (filter.organization) {
+    querySpec.query += ` AND c.organization = @organization`;
+    querySpec.parameters?.push({
+      name: "@organization",
+      value: filter.organization,
+    });
+  }
+  
+  if (filter.team) {
+    querySpec.query += ` AND c.team = @team`;
+    querySpec.parameters?.push({ name: "@team", value: filter.team });
+  }
 
   const { resources } = await container.items
     .query<CopilotMetrics>(querySpec, {
