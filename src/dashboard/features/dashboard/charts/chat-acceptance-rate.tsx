@@ -12,20 +12,19 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-import { AcceptanceRateData, computeAcceptanceAverage } from "./common";
+import { ChatAcceptanceRateData, computeChatAcceptanceAverage } from "./common";
 
 import { ChartHeader } from "./chart-header";
 
-export const AcceptanceRate = () => {
+export const ChatAcceptanceRate = () => {
   const { filteredData } = useDashboard();
-  const data = computeAcceptanceAverage(filteredData);
+  const data = computeChatAcceptanceAverage(filteredData);
 
   return (
     <Card className="col-span-4">
       <ChartHeader
-        title="Acceptance rate"
-        description=" The ratio of accepted code and lines suggested to the total code and lines suggested by GitHub
-          Copilot"
+        title="Chat Acceptance rate"
+        description=" The ratio of GitHub Copilot Chat total insertion and copy events to the total Github Copilot Chats"
       />
 
       <CardContent>
@@ -33,6 +32,7 @@ export const AcceptanceRate = () => {
           <AreaChart accessibilityLayer data={data}>
             <CartesianGrid vertical={false} />
             <YAxis
+              dataKey={chartConfig.acceptanceChatRate.key}
               tickLine={false}
               axisLine={false}
               tickMargin={8}
@@ -48,17 +48,10 @@ export const AcceptanceRate = () => {
             />
             <ChartTooltip cursor={true} content={<ChartTooltipContent />} />
             <Area
-              dataKey={chartConfig.acceptanceRate.key}
+              dataKey={chartConfig.acceptanceChatRate.key}
               type="linear"
               fill="hsl(var(--chart-2))"
               stroke="hsl(var(--chart-2))"
-            />
-            <Area
-              dataKey={chartConfig.acceptanceLinesRate.key}
-              type="linear"
-              fill="hsl(var(--chart-1))"
-              fillOpacity={0.6}
-              stroke="hsl(var(--chart-1))"
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
@@ -75,14 +68,9 @@ const chartConfig: Record<
     key: DataKey;
   }
 > = {
-  ["acceptanceRate"]: {
-    label: "Acceptance rate (%) ",
-    key: "acceptanceRate",
-  },
-
-  ["acceptanceLinesRate"]: {
-    label: "Acceptance Lines rate (%) ",
-    key: "acceptanceLinesRate",
+  ["acceptanceChatRate"]: {
+    label: "Chat Acceptance rate (%) ",
+    key: "acceptanceChatRate",
   },
 
   ["timeFrameDisplay"]: {
@@ -91,4 +79,4 @@ const chartConfig: Record<
   },
 };
 
-type DataKey = keyof AcceptanceRateData;
+type DataKey = keyof ChatAcceptanceRateData;

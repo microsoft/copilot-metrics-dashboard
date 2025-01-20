@@ -1,9 +1,11 @@
 import { ErrorPage } from "../common/error-page";
 import { AcceptanceRate } from "./charts/acceptance-rate";
+import { ChatAcceptanceRate } from "./charts/chat-acceptance-rate";
 import { ActiveUsers } from "./charts/active-users";
 import { Editor } from "./charts/editor";
 import { Language } from "./charts/language";
 import { Stats } from "./charts/stats";
+import { TotalChatsAndAcceptances } from "./charts/total-chat-suggestions-and-acceptances";
 import { TotalCodeLineSuggestionsAndAcceptances } from "./charts/total-code-line-suggestions-and-acceptances";
 import { TotalSuggestionsAndAcceptances } from "./charts/total-suggestions-and-acceptances";
 import { DataProvider } from "./dashboard-state";
@@ -44,8 +46,10 @@ export default async function Dashboard(props: IProps) {
               <TimeFrameToggle />
             </div>
             <AcceptanceRate />
+            <ChatAcceptanceRate />
             <TotalCodeLineSuggestionsAndAcceptances />
             <TotalSuggestionsAndAcceptances />
+            <TotalChatsAndAcceptances />
             <Language />
             <Editor />
             <ActiveUsers />
