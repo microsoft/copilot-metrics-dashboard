@@ -45,6 +45,7 @@ export default async function Dashboard(props: IProps) {
             <div className="flex justify-end col-span-4">
               <TimeFrameToggle />
             </div>
+            <ActiveUsers />
             <AcceptanceRate />
             <ChatAcceptanceRate />
             <TotalCodeLineSuggestionsAndAcceptances />
@@ -52,7 +53,6 @@ export default async function Dashboard(props: IProps) {
             <TotalChatsAndAcceptances />
             <Language />
             <Editor />
-            <ActiveUsers />
           </div>
         </div>
       </main>

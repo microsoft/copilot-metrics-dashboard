@@ -28,7 +28,7 @@ export const applyTimeFrameLabel = (
       editor.models.forEach((model) => {
         model.languages!.forEach((language) => {
           breakdowns.push({
-            editor: editor.name,
+            editor: editor.name.toLowerCase(),
             model: model.name,
             language: language.name,
             suggestions_count: language.total_code_suggestions,
