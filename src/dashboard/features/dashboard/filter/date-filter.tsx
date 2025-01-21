@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
+import { format, isValid, parse } from "date-fns";
 import * as React from "react";
 import { DateRange } from "react-day-picker";
 
@@ -17,15 +17,31 @@ import { useRouter } from "next/navigation";
 
 export const DateFilter = () => {
   const today = new Date();
-  // last 31 days
   const lastThirtyOneDays = new Date(today);
   lastThirtyOneDays.setDate(today.getDate() - 31);
 
-  const [date, setDate] = React.useState<DateRange>({
-    from: lastThirtyOneDays,
-    to: today,
-  });
+  const parseDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    const parsed = parse(dateStr, 'yyyy-MM-dd', new Date());
+    return isValid(parsed) ? parsed : null;
+  };
 
+  const getInitialDateRange = () => {
+    if (typeof window === 'undefined') {
+      return { from: lastThirtyOneDays, to: today };
+    }
+    
+    const params = new URLSearchParams(window.location.search);
+    const startDate = parseDate(params.get('startDate'));
+    const endDate = parseDate(params.get('endDate'));
+    
+    if (startDate && endDate) {
+      return { from: startDate, to: endDate };
+    }
+    return { from: lastThirtyOneDays, to: today };
+  };
+
+  const [date, setDate] = React.useState<DateRange>(getInitialDateRange());
   const [isOpen, setIsOpen] = React.useState(false);
 
   const router = useRouter();
