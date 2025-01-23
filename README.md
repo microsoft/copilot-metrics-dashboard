@@ -54,7 +54,6 @@ You will be prompted to provide the following information:
 - GitHub Organization name
 - GitHub Token
 - GitHub API Scope
-- Use Metrics API (beta - will use the GA Metrics API) )
 - Team Names (if you choose to use the new metrics API)
 ```
 
