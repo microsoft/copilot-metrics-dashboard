@@ -1,66 +1,157 @@
-import { CopilotUsage } from "./copilot-metrics-service";
+import { CopilotMetrics } from "@/features/common/models";
 
-export const sampleData: CopilotUsage[] = [
+export const sampleData: CopilotMetrics[] = 
+[
   {
-    total_suggestions_count: 50,
-    total_acceptances_count: 40,
-    total_lines_suggested: 100,
-    total_lines_accepted: 80,
-    total_active_users: 4,
-    total_chat_acceptances: 80,
-    total_chat_turns: 50,
-    total_active_chat_users: 4,
-    day: "2024-03-18",
-    breakdown: [
-      {
-        language: "C#",
-        editor: "vs",
-        suggestions_count: 25,
-        acceptances_count: 20,
-        lines_suggested: 50,
-        lines_accepted: 40,
-        active_users: 2,
-      },
-      {
-        language: "typescript",
-        editor: "vscode",
-        suggestions_count: 25,
-        acceptances_count: 20,
-        lines_suggested: 50,
-        lines_accepted: 40,
-        active_users: 2,
-      },
-    ],
-  },
-  {
-    total_suggestions_count: 30,
-    total_acceptances_count: 15,
-    total_lines_suggested: 40,
-    total_lines_accepted: 15,
-    total_active_users: 10,
-    total_chat_acceptances: 50,
-    total_chat_turns: 40,
-    total_active_chat_users: 10,
-    day: "2024-04-19",
-    breakdown: [
-      {
-        language: "C#",
-        editor: "vs",
-        suggestions_count: 10,
-        acceptances_count: 5,
-        lines_suggested: 10,
-        lines_accepted: 5,
-        active_users: 5,
-      },
-      {
-        language: "typescript",
-        editor: "vscode",
-        suggestions_count: 20,
-        acceptances_count: 10,
-        lines_suggested: 30,
-        lines_accepted: 10,
-        active_users: 5,
-      },
-    ],
-  },
-];
+    "date": "2024-06-24",
+    "total_active_users": 24,
+    "total_engaged_users": 20,
+    "copilot_ide_code_completions": {
+      "total_engaged_users": 20,
+      "languages": [
+        {
+          "name": "python",
+          "total_engaged_users": 10
+        },
+        {
+          "name": "ruby",
+          "total_engaged_users": 10
+        }
+      ],
+      "editors": [
+        {
+          "name": "vscode",
+          "total_engaged_users": 13,
+          "models": [
+            {
+              "name": "default",
+              "is_custom_model": false,
+              "custom_model_training_date": null,
+              "total_engaged_users": 13,
+              "languages": [
+                {
+                  "name": "python",
+                  "total_engaged_users": 6,
+                  "total_code_suggestions": 249,
+                  "total_code_acceptances": 123,
+                  "total_code_lines_suggested": 225,
+                  "total_code_lines_accepted": 135
+                },
+                {
+                  "name": "ruby",
+                  "total_engaged_users": 7,
+                  "total_code_suggestions": 496,
+                  "total_code_acceptances": 253,
+                  "total_code_lines_suggested": 520,
+                  "total_code_lines_accepted": 270
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "neovim",
+          "total_engaged_users": 7,
+          "models": [
+            {
+              "name": "a-custom-model",
+              "is_custom_model": true,
+              "custom_model_training_date": "2024-02-01",
+              "total_engaged_users": 4,
+              "languages": [
+                {
+                  "name": "typescript",
+                  "total_engaged_users": 3,
+                  "total_code_suggestions": 112,
+                  "total_code_acceptances": 56,
+                  "total_code_lines_suggested": 143,
+                  "total_code_lines_accepted": 61
+                },
+                {
+                  "name": "go",
+                  "total_engaged_users": 4,
+                  "total_code_suggestions": 132,
+                  "total_code_acceptances": 67,
+                  "total_code_lines_suggested": 154,
+                  "total_code_lines_accepted": 72
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "copilot_ide_chat": {
+      "total_engaged_users": 13,
+      "editors": [
+        {
+          "name": "vscode",
+          "total_engaged_users": 13,
+          "models": [
+            {
+              "name": "default",
+              "is_custom_model": false,
+              "custom_model_training_date": null,
+              "total_engaged_users": 12,
+              "total_chats": 45,
+              "total_chat_insertion_events": 12,
+              "total_chat_copy_events": 16
+            },
+            {
+              "name": "a-custom-model",
+              "is_custom_model": true,
+              "custom_model_training_date": "2024-02-01",
+              "total_engaged_users": 1,
+              "total_chats": 10,
+              "total_chat_insertion_events": 11,
+              "total_chat_copy_events": 3
+            }
+          ]
+        }
+      ]
+    },
+    "copilot_dotcom_chat": {
+      "total_engaged_users": 14,
+      "models": [
+        {
+          "name": "default",
+          "is_custom_model": false,
+          "custom_model_training_date": null,
+          "total_engaged_users": 14,
+          "total_chats": 38
+        }
+      ]
+    },
+    "copilot_dotcom_pull_requests": {
+      "total_engaged_users": 12,
+      "repositories": [
+        {
+          "name": "demo/repo1",
+          "total_engaged_users": 8,
+          "models": [
+            {
+              "name": "default",
+              "is_custom_model": false,
+              "custom_model_training_date": null,
+              "total_pr_summaries_created": 6,
+              "total_engaged_users": 8
+            }
+          ]
+        },
+        {
+          "name": "demo/repo2",
+          "total_engaged_users": 4,
+          "models": [
+            {
+              "name": "a-custom-model",
+              "is_custom_model": true,
+              "custom_model_training_date": "2024-02-01",
+              "total_pr_summaries_created": 10,
+              "total_engaged_users": 4
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

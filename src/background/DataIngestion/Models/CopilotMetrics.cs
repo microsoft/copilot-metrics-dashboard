@@ -5,7 +5,13 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Models;
 public class Metrics
 {
     [JsonPropertyName("id")]
-    public string? Id { get; set; }
+    public string Id
+    {
+        get
+        {
+            return GetId();
+        }
+    }
 
     [JsonPropertyName("date")]
     public DateOnly Date { get; set; }
@@ -27,6 +33,31 @@ public class Metrics
     
     [JsonPropertyName("copilot_dotcom_pull_requests")]
     public DotComPullRequest? DotComPullRequests { get; set; }
+
+    [JsonPropertyName("enterprise")]
+    public string? Enterprise { get; set; }
+
+    [JsonPropertyName("organization")]
+    public string? Organization { get; set; }
+
+    [JsonPropertyName("team")]
+    public string? Team { get; set; }
+
+    [JsonPropertyName("last_update")]
+    public DateTime LastUpdate { get; set; } = DateTime.UtcNow;
+
+    private string GetId()
+    {
+        if (!string.IsNullOrWhiteSpace(this.Organization))
+        {
+            return $"{this.Date.ToString("yyyy-MM-d")}-ORG-{this.Organization}{(string.IsNullOrWhiteSpace(this.Team) ? "" : $"-{this.Team}")}";
+        }
+        else if (!string.IsNullOrWhiteSpace(this.Enterprise))
+        {
+            return $"{this.Date.ToString("yyyy-MM-d")}-ENT-{this.Enterprise}{(string.IsNullOrWhiteSpace(this.Team) ? "" : $"-{this.Team}")}";
+        }
+        return $"{this.Date.ToString("yyyy-MM-d")}-XXX";
+    }
 }
 
 public class IdeCodeCompletions

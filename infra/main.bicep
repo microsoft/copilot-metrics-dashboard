@@ -32,9 +32,6 @@ param githubAPIVersion string = '2022-11-28'
 @description('True to use Test Data instead of calling the real API')
 param useTestData bool
 
-@description('True to ingest data using the new Metrics API')
-param useMetricsApi bool
-
 @description('List of team names - works with the new Metrics API')
 param teamNames array
 
@@ -64,7 +61,6 @@ module resources 'resources.bicep' = {
     githubAPIVersion: githubAPIVersion
     githubAPIScope: githubAPIScope
     teamNames: teamNames
-    useMetricsApi: useMetricsApi
     useTestData: useTestData
   }
 }

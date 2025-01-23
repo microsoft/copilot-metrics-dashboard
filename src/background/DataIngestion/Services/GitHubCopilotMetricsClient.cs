@@ -53,25 +53,33 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
             }
             _logger.LogInformation($"Fetched data from {requestUri}");
-            var metrics = AddIds((await response.Content.ReadFromJsonAsync<Metrics[]>())!, type, orgOrEnterpriseName, team);
+            var metrics = AddInfo((await response.Content.ReadFromJsonAsync<Metrics[]>())!, type, orgOrEnterpriseName, team);
             return metrics;
         }
 
-        public async ValueTask<Metrics[]> GetTestCoPilotMetrics(string? team)
+        public async ValueTask<Metrics[]> GetTestCopilotMetrics(string? team)
         {
             await using var reader = typeof(CopilotMetricsIngestion)
                     .Assembly
                     .GetManifestResourceStream(
                         "Microsoft.CopilotDashboard.DataIngestion.TestData.metrics.json")!;
 
-            return AddIds((await JsonSerializer.DeserializeAsync<Metrics[]>(reader))!, MetricsType.Org, "test", team);
+            return AddInfo((await JsonSerializer.DeserializeAsync<Metrics[]>(reader))!, MetricsType.Org, "test", team);
         }
 
-        private Metrics[] AddIds(Metrics[] metrics, MetricsType type, string orgOrEnterpriseName, string? team = null)
+        private Metrics[] AddInfo(Metrics[] metrics, MetricsType type, string orgOrEnterpriseName, string? team = null)
         {
             foreach (var metric in metrics)
             {
-                metric.Id = $"{metric.Date.ToString("O")}-{type.ToString().ToLowerInvariant()}-{orgOrEnterpriseName}{(string.IsNullOrWhiteSpace(team) ? "" : $"-{team}")}";
+                metric.Team = team;
+                if(type == MetricsType.Ent)
+                {
+                    metric.Enterprise = orgOrEnterpriseName;
+                }
+                else
+                {
+                    metric.Organization = orgOrEnterpriseName;
+                }
             }
 
             return metrics;

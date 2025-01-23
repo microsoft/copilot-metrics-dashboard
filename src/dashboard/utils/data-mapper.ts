@@ -1,4 +1,4 @@
-import { CopilotUsageOutput } from "../services/copilot-metrics-service";
+import { CopilotUsageOutput } from "@/features/common/models";
 
 export const groupByTimeFrame = (
   groupedByTimeFrame: Record<string, CopilotUsageOutput[]>
@@ -7,14 +7,17 @@ export const groupByTimeFrame = (
 
   Object.keys(groupedByTimeFrame).forEach((week) => {
     const aggregatedData: CopilotUsageOutput = {
-      total_suggestions_count: 0,
-      total_acceptances_count: 0,
-      total_lines_suggested: 0,
-      total_lines_accepted: 0,
       total_active_users: 0,
-      total_chat_acceptances: 0,
-      total_chat_turns: 0,
-      total_active_chat_users: 0,
+      total_engaged_users: 0,
+      total_ide_engaged_users: 0,
+      total_code_suggestions: 0,
+      total_code_acceptances: 0,
+      total_code_lines_suggested: 0,
+      total_code_lines_accepted: 0,
+      total_chat_engaged_users: 0,
+      total_chats: 0,
+      total_chat_insertion_events: 0,
+      total_chat_copy_events: 0,
       day: "", // Decide how to handle this
       breakdown: [], // Decide how to handle this
       time_frame_month: "",
@@ -25,14 +28,17 @@ export const groupByTimeFrame = (
     const timeFrameLength = groupedByTimeFrame[week].length;
 
     groupedByTimeFrame[week].forEach((item, index) => {
-      aggregatedData.total_suggestions_count += item.total_suggestions_count;
-      aggregatedData.total_acceptances_count += item.total_acceptances_count;
-      aggregatedData.total_lines_suggested += item.total_lines_suggested;
-      aggregatedData.total_lines_accepted += item.total_lines_accepted;
       aggregatedData.total_active_users += item.total_active_users;
-      aggregatedData.total_chat_acceptances += item.total_chat_acceptances;
-      aggregatedData.total_chat_turns += item.total_chat_turns;
-      aggregatedData.total_active_chat_users += item.total_active_chat_users;
+      aggregatedData.total_engaged_users += item.total_engaged_users;
+      aggregatedData.total_ide_engaged_users += item.total_ide_engaged_users;
+      aggregatedData.total_code_suggestions += item.total_code_suggestions;
+      aggregatedData.total_code_acceptances += item.total_code_acceptances;
+      aggregatedData.total_code_lines_suggested += item.total_code_lines_suggested;
+      aggregatedData.total_code_lines_accepted += item.total_code_lines_accepted;
+      aggregatedData.total_chat_engaged_users += item.total_chat_engaged_users;
+      aggregatedData.total_chats += item.total_chats;
+      aggregatedData.total_chat_insertion_events += item.total_chat_insertion_events;
+      aggregatedData.total_chat_copy_events += item.total_chat_copy_events;
 
       item.breakdown.forEach((breakdownItem) => {
         const existingIndex = aggregatedData.breakdown.findIndex(
@@ -64,8 +70,12 @@ export const groupByTimeFrame = (
       aggregatedData.total_active_users
     );
 
-    aggregatedData.total_active_chat_users = average(
-      aggregatedData.total_active_chat_users
+    aggregatedData.total_engaged_users = average(
+      aggregatedData.total_engaged_users
+    );
+
+    aggregatedData.total_chat_engaged_users = average(
+      aggregatedData.total_chat_engaged_users
     );
 
     updatedResponse.push(aggregatedData);

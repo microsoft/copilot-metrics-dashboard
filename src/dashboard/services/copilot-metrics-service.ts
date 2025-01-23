@@ -2,81 +2,61 @@ import {
   formatResponseError,
   unknownResponseError,
 } from "@/features/common/response-error";
+import {
+  CopilotMetrics,
+  CopilotUsageOutput,
+} from "@/features/common/models";
 import { ServerActionResponse } from "@/features/common/server-action-response";
 import { SqlQuerySpec } from "@azure/cosmos";
 import { format } from "date-fns";
 import { cosmosClient, cosmosConfiguration } from "./cosmos-db-service";
 import { ensureGitHubEnvConfig } from "./env-service";
-import { applyTimeFrameLabel } from "./helper";
+import { stringIsNullOrEmpty, applyTimeFrameLabel } from "../utils/helpers";
 import { sampleData } from "./sample-data";
-
-export interface CopilotUsage {
-  total_suggestions_count: number;
-  total_acceptances_count: number;
-  total_lines_suggested: number;
-  total_lines_accepted: number;
-  total_active_users: number;
-  total_chat_acceptances: number;
-  total_chat_turns: number;
-  total_active_chat_users: number;
-  day: string;
-  breakdown: Breakdown[];
-}
-
-export interface CopilotUsageOutput extends CopilotUsage {
-  time_frame_week: string;
-  time_frame_month: string;
-  time_frame_display: string;
-}
-
-export interface Breakdown {
-  language: string;
-  editor: string;
-  suggestions_count: number;
-  acceptances_count: number;
-  lines_suggested: number;
-  lines_accepted: number;
-  active_users: number;
-}
 
 export interface IFilter {
   startDate?: Date;
   endDate?: Date;
+  enterprise: string;
+  organization: string;
+  team: string;
 }
 
 export const getCopilotMetrics = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
+  const env = ensureGitHubEnvConfig();
+  const isCosmosConfig = cosmosConfiguration();
+
+  if (env.status !== "OK") {
+    return env;
+  }
+
+  const { enterprise, organization } = env.response;
+
   try {
-    const isCosmosConfig = cosmosConfiguration();
-    switch(process.env.GITHUB_API_SCOPE) {
-      // If we have the required environment variables, we can use the enterprise API endpoint
+    switch (process.env.GITHUB_API_SCOPE) {
       case "enterprise":
-        // If we have the required environment variables, we can use the database
-        if (isCosmosConfig) {
-          return getCopilotMetricsForEnterpriseFromDatabase(filter);
+        if (stringIsNullOrEmpty(filter.enterprise)) {
+          filter.enterprise = enterprise;
         }
-        return getCopilotMetricsForEnterpriseFromApi();
-      break;
-      
-      // As default option, we can use the organization API endpoint
+        break;
       default:
-        // If we have the required environment variables, we can use the database
-        if (isCosmosConfig) {
-          return getCopilotMetricsForOrgsFromDatabase(filter);
+        if (stringIsNullOrEmpty(filter.organization)) {
+          filter.organization = organization;
         }
-        return getCopilotMetricsForOrgsFromApi();
-      break;
+        break;
     }
+    if (isCosmosConfig) {
+      return getCopilotMetricsFromDatabase(filter);
+    }
+    return getCopilotMetricsFromApi(filter);
   } catch (e) {
-    return {
-      status: "ERROR",
-      errors: [{ message: "" + e }],
-    };
+    return unknownResponseError(e);
   }
 };
 
-export const getCopilotMetricsForOrgsFromApi = async (): Promise<
+export const getCopilotMetricsFromApi = async (filter: IFilter): Promise<
   ServerActionResponse<CopilotUsageOutput[]>
 > => {
   const env = ensureGitHubEnvConfig();
@@ -85,81 +65,67 @@ export const getCopilotMetricsForOrgsFromApi = async (): Promise<
     return env;
   }
 
-  const { organization, token, version } = env.response;
+  const { token, version } = env.response;
 
   try {
-    const response = await fetch(
-      `https://api.github.com/orgs/${organization}/copilot/usage`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: `application/vnd.github+json`,
-          Authorization: `Bearer ${token}`,
-          "X-GitHub-Api-Version": version,
-        },
+    if(filter.enterprise) {
+      const response = await fetch(
+        `https://api.github.com/enterprises/${filter.enterprise}/copilot/metrics`,
+        {
+          cache: "no-store",
+          headers: {
+            Accept: `application/vnd.github+json`,
+            Authorization: `Bearer ${token}`,
+            "X-GitHub-Api-Version": version,
+          },
+        }
+      );
+  
+      if (!response.ok) {
+        return formatResponseError(filter.enterprise, response);
       }
-    );
+  
+      const data = await response.json();
+      const dataWithTimeFrame = applyTimeFrameLabel(data);
+      return {
+        status: "OK",
+        response: dataWithTimeFrame,
+      };
+    } else {
+      const response = await fetch(
+        `https://api.github.com/orgs/${filter.organization}/copilot/metrics`,
+        {
+          cache: "no-store",
+          headers: {
+            Accept: `application/vnd.github+json`,
+            Authorization: `Bearer ${token}`,
+            "X-GitHub-Api-Version": version,
+          },
+        }
+      );
 
-    if (!response.ok) {
-      return formatResponseError(organization, response);
+      if (!response.ok) {
+        return formatResponseError(filter.organization, response);
+      }
+
+      const data = await response.json();
+      const dataWithTimeFrame = applyTimeFrameLabel(data);
+      return {
+        status: "OK",
+        response: dataWithTimeFrame,
+      };
     }
-
-    const data = await response.json();
-    const dataWithTimeFrame = applyTimeFrameLabel(data);
-    return {
-      status: "OK",
-      response: dataWithTimeFrame,
-    };
   } catch (e) {
     return unknownResponseError(e);
   }
 };
 
-export const getCopilotMetricsForEnterpriseFromApi = async (): Promise<
-  ServerActionResponse<CopilotUsageOutput[]>
-> => {
-  const env = ensureGitHubEnvConfig();
-
-  if (env.status !== "OK") {
-    return env;
-  }
-
-  const { enterprise, token, version } = env.response;
-
-  try {
-    const response = await fetch(
-      `https://api.github.com/enterprises/${enterprise}/copilot/usage`,
-      {
-        cache: "no-store",
-        headers: {
-          Accept: `application/vnd.github+json`,
-          Authorization: `Bearer ${token}`,
-          "X-GitHub-Api-Version": version,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      return formatResponseError(enterprise, response);
-    }
-
-    const data = await response.json();
-    const dataWithTimeFrame = applyTimeFrameLabel(data);
-    return {
-      status: "OK",
-      response: dataWithTimeFrame,
-    };
-  } catch (e) {
-    return unknownResponseError(e);
-  }
-};
-
-export const getCopilotMetricsForOrgsFromDatabase = async (
+export const getCopilotMetricsFromDatabase = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
   const client = cosmosClient();
   const database = client.database("platform-engineering");
-  const container = database.container("history");
+  const container = database.container("metrics_history");
 
   let start = "";
   let end = "";
@@ -180,60 +146,36 @@ export const getCopilotMetricsForOrgsFromDatabase = async (
   }
 
   let querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c.day >= @start AND c.day <= @end`,
+    query: `SELECT * FROM c WHERE c.date >= @start AND c.date <= @end`,
     parameters: [
       { name: "@start", value: start },
       { name: "@end", value: end },
     ],
   };
 
-  const { resources } = await container.items
-    .query<CopilotUsageOutput>(querySpec, {
-      maxItemCount: maxDays,
-    })
-    .fetchAll();
-
-  const dataWithTimeFrame = applyTimeFrameLabel(resources);
-  return {
-    status: "OK",
-    response: dataWithTimeFrame,
-  };
-};
-
-export const getCopilotMetricsForEnterpriseFromDatabase = async (
-  filter: IFilter
-): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
-  const client = cosmosClient();
-  const database = client.database("platform-engineering");
-  const container = database.container("history");
-
-  let start = "";
-  let end = "";
-  const maxDays = 365 * 2; // maximum 2 years of data
-  const maximumDays = 31;
-
-  if (filter.startDate && filter.endDate) {
-    start = format(filter.startDate, "yyyy-MM-dd");
-    end = format(filter.endDate, "yyyy-MM-dd");
-  } else {
-    const todayDate = new Date();
-    const startDate = new Date(todayDate);
-    startDate.setDate(todayDate.getDate() - maximumDays);
-
-    start = format(startDate, "yyyy-MM-dd");
-    end = format(todayDate, "yyyy-MM-dd");
+  if (filter.enterprise) {
+    querySpec.query += ` AND c.enterprise = @enterprise`;
+    querySpec.parameters?.push({
+      name: "@enterprise",
+      value: filter.enterprise,
+    });
   }
 
-  let querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c.day >= @start AND c.day <= @end`,
-    parameters: [
-      { name: "@start", value: start },
-      { name: "@end", value: end },
-    ],
-  };
+  if (filter.organization) {
+    querySpec.query += ` AND c.organization = @organization`;
+    querySpec.parameters?.push({
+      name: "@organization",
+      value: filter.organization,
+    });
+  }
+  
+  if (filter.team) {
+    querySpec.query += ` AND c.team = @team`;
+    querySpec.parameters?.push({ name: "@team", value: filter.team });
+  }
 
   const { resources } = await container.items
-    .query<CopilotUsageOutput>(querySpec, {
+    .query<CopilotMetrics>(querySpec, {
       maxItemCount: maxDays,
     })
     .fetchAll();

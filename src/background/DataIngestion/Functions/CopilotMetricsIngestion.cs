@@ -28,9 +28,6 @@ public class CopilotMetricsIngestion
     public async Task<List<Metrics>> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
         _logger.LogInformation($"GitHubCopilotMetricsIngestion timer trigger function executed at: {DateTime.Now}");
-        bool.TryParse(Environment.GetEnvironmentVariable("USE_METRICS_API"), out var useMetricsApi);
-        _logger.LogInformation($"USE_METRICS_API: {useMetricsApi}");
-        if (!useMetricsApi) return [];
 
         var metrics = new List<Metrics>();
 
@@ -77,6 +74,6 @@ public class CopilotMetricsIngestion
 
     private ValueTask<Metrics[]> LoadTestData(string? teamName)
     {
-        return _metricsClient.GetTestCoPilotMetrics(teamName);
+        return _metricsClient.GetTestCopilotMetrics(teamName);
     }
 }

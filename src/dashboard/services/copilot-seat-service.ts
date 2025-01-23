@@ -8,7 +8,7 @@ import {
   CopilotSeatsData,
   CopilotSeatManagementData,
 } from "@/features/common/models";
-import { cosmosClient } from "./cosmos-db-service";
+import { cosmosClient, cosmosConfiguration } from "./cosmos-db-service";
 import { format } from "date-fns";
 import { SqlQuerySpec } from "@azure/cosmos";
 import { stringIsNullOrEmpty } from "../utils/helpers";
@@ -24,6 +24,7 @@ export const getCopilotSeats = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotSeatsData>> => {
   const env = ensureGitHubEnvConfig();
+  const isCosmosConfig = cosmosConfiguration();
 
   if (env.status !== "OK") {
     return env;
@@ -44,7 +45,10 @@ export const getCopilotSeats = async (
         }
         break;
     }
-    return getCopilotSeatsFromDatabase(filter);
+    if (isCosmosConfig) {
+      return getCopilotSeatsFromDatabase(filter);
+    }
+    return getCopilotSeatsFromApi(filter);
   } catch (e) {
     return unknownResponseError(e);
   }
@@ -102,6 +106,103 @@ const getCopilotSeatsFromDatabase = async (
   };
 };
 
+const getCopilotSeatsFromApi = async (
+  filter: IFilter
+): Promise<ServerActionResponse<CopilotSeatsData>> => {
+  const env = ensureGitHubEnvConfig();
+
+  if (env.status !== "OK") {
+    return env;
+  }
+
+  let { token, version } = env.response;
+
+  try {
+    if (filter.enterprise) { 
+      const today = new Date();
+      const enterpriseSeats: CopilotSeatsData = {
+        enterprise: filter.enterprise,
+        seats: [],
+        total_seats: 0,
+        last_update: format(today, "yyyy-MM-ddTHH:mm:ss"),
+        date: format(today, "yyyy-MM-dd"),
+        id: `${today}-ENT-${filter.enterprise}`,
+        organization: null,
+      };
+
+      let url = `https://api.github.com/enterprises/${filter.enterprise}/copilot/billing/seats`;
+      do {
+        const enterpriseResponse = await fetch(url, {
+          cache: "no-store",
+          headers: {
+            Accept: `application/vnd.github+json`,
+            Authorization: `Bearer ${token}`,
+            "X-GitHub-Api-Version": version,
+          },
+        });
+
+        if (!enterpriseResponse.ok) {
+          return formatResponseError(filter.enterprise, enterpriseResponse);
+        }
+
+        const enterpriseData = await enterpriseResponse.json();
+        enterpriseSeats.seats.push(...enterpriseData.seats);
+        enterpriseSeats.total_seats = enterpriseData.total_seats;
+
+        const linkHeader = enterpriseResponse.headers.get("Link");
+        url = getNextUrlFromLinkHeader(linkHeader) || "";
+      } while (!stringIsNullOrEmpty(url));
+
+      return {
+        status: "OK",
+        response: enterpriseSeats as CopilotSeatsData,
+      };
+    }
+    else {
+      const today = new Date();
+      const organizationSeats: CopilotSeatsData = {
+        organization: filter.organization,
+        seats: [],
+        total_seats: 0,
+        last_update: format(today, "yyyy-MM-ddTHH:mm:ss"),
+        date: format(today, "yyyy-MM-dd"),
+        id: `${today}-ENT-${filter.organization}`,
+        enterprise: null,
+      };
+
+      let url = `https://api.github.com/orgs/${filter.organization}/copilot/billing/seats`;
+      do {
+        const organizationResponse = await fetch(url, {
+          cache: "no-store",
+          headers: {
+            Accept: `application/vnd.github+json`,
+            Authorization: `Bearer ${token}`,
+            "X-GitHub-Api-Version": version,
+          },
+        });
+
+        if (!organizationResponse.ok) {
+          return formatResponseError(filter.organization, organizationResponse);
+        }
+
+        const enterpriseData = await organizationResponse.json();
+        organizationSeats.seats.push(...enterpriseData.seats);
+        organizationSeats.total_seats = enterpriseData.total_seats;
+
+        const linkHeader = organizationResponse.headers.get("Link");
+        url = getNextUrlFromLinkHeader(linkHeader) || "";
+      } while (!stringIsNullOrEmpty(url));
+
+      return {
+        status: "OK",
+        response: organizationSeats as CopilotSeatsData,
+      };
+    }
+  } catch (e) {
+    return unknownResponseError(e);
+  }
+};
+
 export const getCopilotSeatsManagement = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotSeatManagementData>> => {
@@ -126,13 +227,13 @@ export const getCopilotSeatsManagement = async (
         }
         break;
     }
-    return getCopilotSeatsManagementFromAPI(filter);
+    return getCopilotSeatsManagementFromApi(filter);
   } catch (e) {
     return unknownResponseError(e);
   }
 };
 
-const getCopilotSeatsManagementFromAPI = async (
+const getCopilotSeatsManagementFromApi = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotSeatManagementData>> => {
   const env = ensureGitHubEnvConfig();
@@ -150,38 +251,13 @@ const getCopilotSeatsManagementFromAPI = async (
           filter.enterprise = enterprise;
         }
         const today = new Date();
-        const enterpriseSeats: CopilotSeatsData = {
-          enterprise: filter.enterprise,
-          seats: [],
-          total_seats: 0,
-          last_update: format(today, "yyyy-MM-ddTHH:mm:ss"),
-          date: format(today, "yyyy-MM-dd"),
-          id: `${today}-ENT-${filter.enterprise}`,
-          organization: null,
-        };
-
-        let url = `https://api.github.com/enterprises/${filter.enterprise}/copilot/billing/seats`;
-        do {
-          const enterpriseResponse = await fetch(url, {
-            cache: "no-store",
-            headers: {
-              Accept: `application/vnd.github+json`,
-              Authorization: `Bearer ${token}`,
-              "X-GitHub-Api-Version": version,
-            },
-          });
-
-          if (!enterpriseResponse.ok) {
-            return formatResponseError(enterprise, enterpriseResponse);
-          }
-
-          const enterpriseData = await enterpriseResponse.json();
-          enterpriseSeats.seats.push(...enterpriseData.seats);
-          enterpriseSeats.total_seats = enterpriseData.total_seats;
-
-          const linkHeader = enterpriseResponse.headers.get("Link");
-          url = getNextUrlFromLinkHeader(linkHeader) || "";
-        } while (!stringIsNullOrEmpty(url));
+        const enterpriseData = await getCopilotSeatsFromApi(filter);
+        
+        // Get the enterprise seats data
+        if (enterpriseData.status !== "OK" || !enterpriseData.response) {
+          return unknownResponseError(filter.enterprise);
+        }
+        const enterpriseSeats = enterpriseData.response;
 
         // Copilot seats are considered active if they have been active in the last 30 days
         const activeSeats = enterpriseSeats.seats.filter((seat) => {

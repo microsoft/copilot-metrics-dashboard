@@ -101,3 +101,105 @@ export interface SeatBreakdown {
     cli: string;
     plan_type: string;
   }
+
+  export interface CopilotUsage {
+    total_active_users: number;
+    total_engaged_users: number;
+    total_ide_engaged_users: number;
+    total_code_suggestions: number;
+    total_code_acceptances: number;
+    total_code_lines_suggested: number;
+    total_code_lines_accepted: number;
+    total_chat_engaged_users: number;
+    total_chats: number;
+    total_chat_insertion_events: number;
+    total_chat_copy_events: number;
+    day: string;
+    breakdown: Breakdown[];
+  }
+  
+  export interface Breakdown {
+    language: string;
+    editor: string;
+    model: string;
+    suggestions_count: number;
+    acceptances_count: number;
+    lines_suggested: number;
+    lines_accepted: number;
+    active_users: number;
+  }
+
+  export interface CopilotUsageOutput extends CopilotUsage {
+    time_frame_week: string;
+    time_frame_month: string;
+    time_frame_display: string;
+  }
+
+  export interface Languages {
+    name: string;
+    total_engaged_users: number;
+  }
+
+  export interface LanguageMetrics {
+    name: string;
+    total_engaged_users: number;
+    total_code_suggestions?: number;
+    total_code_acceptances?: number;
+    total_code_lines_suggested?: number;
+    total_code_lines_accepted?: number;
+  }
+  
+  export interface ModelMetrics {
+    name: string;
+    is_custom_model: boolean;
+    custom_model_training_date: string | null;
+    total_engaged_users: number;
+    languages?: LanguageMetrics[];
+    total_chats?: number;
+    total_chat_insertion_events?: number;
+    total_chat_copy_events?: number;
+    total_pr_summaries_created?: number;
+  }
+  
+  export interface EditorMetrics {
+    name: string;
+    total_engaged_users: number;
+    models: ModelMetrics[];
+  }
+  
+  export interface RepositoryMetrics {
+    name: string;
+    total_engaged_users: number;
+    models: ModelMetrics[];
+  }
+  
+  export interface CopilotIDEMetrics {
+    total_engaged_users: number;
+    languages: Languages[];
+    editors: EditorMetrics[];
+  }
+  
+  export interface CopilotIDEChatMetrics {
+    total_engaged_users: number;
+    editors: EditorMetrics[];
+  }
+  
+  export interface CopilotDotcomChatMetrics {
+    total_engaged_users: number;
+    models: ModelMetrics[];
+  }
+  
+  export interface CopilotDotcomPullRequestsMetrics {
+    total_engaged_users: number;
+    repositories: RepositoryMetrics[];
+  }
+  
+  export interface CopilotMetrics {
+    date: string;
+    total_active_users: number;
+    total_engaged_users: number;
+    copilot_ide_code_completions: CopilotIDEMetrics;
+    copilot_ide_chat: CopilotIDEChatMetrics;
+    copilot_dotcom_chat: CopilotDotcomChatMetrics;
+    copilot_dotcom_pull_requests: CopilotDotcomPullRequestsMetrics;
+  }

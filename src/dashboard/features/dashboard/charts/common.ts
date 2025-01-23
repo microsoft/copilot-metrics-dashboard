@@ -1,9 +1,9 @@
-import { Breakdown } from "@/services/copilot-metrics-service";
-import { CopilotUsageOutput } from "@/services/copilot-metrics-service";
+import { Breakdown, CopilotUsageOutput } from "@/features/common/models";
 import { PieChartData } from "./language";
 
 export interface AcceptanceRateData {
   acceptanceRate: number;
+  acceptanceLinesRate: number;
   timeFrameDisplay: string;
 }
 
@@ -11,6 +11,20 @@ export const computeAcceptanceAverage = (
   filteredData: CopilotUsageOutput[]
 ): AcceptanceRateData[] => {
   const rates = filteredData.map((item) => {
+    let cumulatedAccepted = 0;
+    let cumulatedSuggested = 0;
+
+    item.breakdown.forEach((breakdown: Breakdown) => {
+      const { acceptances_count, suggestions_count } = breakdown;
+      cumulatedAccepted += acceptances_count;
+      cumulatedSuggested += suggestions_count;
+    });
+
+    const acceptanceAverage =
+    cumulatedSuggested !== 0
+      ? (cumulatedAccepted / cumulatedSuggested) * 100
+      : 0;
+    
     let cumulatedLinesAccepted = 0;
     let cumulatedLinesSuggested = 0;
 
@@ -20,13 +34,14 @@ export const computeAcceptanceAverage = (
       cumulatedLinesSuggested += lines_suggested;
     });
 
-    const acceptanceAverage =
+    const acceptanceLinesAverage =
       cumulatedLinesSuggested !== 0
         ? (cumulatedLinesAccepted / cumulatedLinesSuggested) * 100
         : 0;
 
     return {
       acceptanceRate: parseFloat(acceptanceAverage.toFixed(2)),
+      acceptanceLinesRate: parseFloat(acceptanceLinesAverage.toFixed(2)),
       timeFrameDisplay: item.time_frame_display,
     };
   });
@@ -46,7 +61,7 @@ export function getActiveUsers(
   const rates = filteredData.map((item) => {
     return {
       totalUsers: item.total_active_users,
-      totalChatUsers: item.total_active_chat_users,
+      totalChatUsers: item.total_chat_engaged_users,
       timeFrameDisplay: item.time_frame_display,
     };
   });
@@ -164,12 +179,22 @@ export const computeCumulativeAcceptanceAverage = (
 ) => {
   const acceptanceAverages = computeAcceptanceAverage(filteredData);
 
+  const acceptanceChatAverages = computeChatAcceptanceAverage(filteredData);
+
   const totalAcceptanceRate = acceptanceAverages.reduce(
-    (sum, rate) => sum + rate.acceptanceRate,
+    (sum, rate) => sum + rate.acceptanceLinesRate,
     0
   );
 
-  return totalAcceptanceRate / acceptanceAverages.length;
+  const totalChatAcceptanceRate = acceptanceChatAverages.reduce(
+    (sum, rate) => sum + rate.acceptanceChatRate,
+    0
+  ); 
+
+  const comulativeAcceptanceRate = totalAcceptanceRate / acceptanceAverages.length;
+  const comulativeChatAcceptanceRate = totalChatAcceptanceRate / acceptanceChatAverages.length;
+
+  return (comulativeAcceptanceRate + comulativeChatAcceptanceRate) / 2;
 };
 
 export interface LineSuggestionsAndAcceptancesData {
@@ -222,6 +247,53 @@ export function totalSuggestionsAndAcceptances(
       totalAcceptancesCount,
       totalSuggestionsCount,
       timeFrameDisplay: item.time_frame_display,
+    };
+  });
+
+  return rates;
+}
+
+export interface ChatAcceptanceRateData {
+  acceptanceChatRate: number;
+  timeFrameDisplay: string;
+}
+
+export const computeChatAcceptanceAverage = (
+  filteredData: CopilotUsageOutput[]
+): ChatAcceptanceRateData[] => {
+  const rates = filteredData.map((item) => {
+
+    const acceptanceRate =
+    item.total_chats !== 0
+      ? ((item.total_chat_insertion_events + item.total_chat_copy_events) / item.total_chats) * 100
+      : 0;
+
+    return {
+      acceptanceChatRate: parseFloat(acceptanceRate.toFixed(2)),
+      timeFrameDisplay: item.time_frame_display
+    };
+  });
+
+  return rates;
+};
+
+export interface ChatAcceptanceData {
+  totalChats: number;
+  totalChatInsertionEvents: number;
+  totalChatCopyEvents: number;
+  timeFrameDisplay: string;
+}
+
+export function totalChatsAndAcceptances(
+  filteredData: CopilotUsageOutput[]
+): ChatAcceptanceData[] {
+  const rates = filteredData.map((item) => {
+
+    return {
+      totalChats: item.total_chats,
+      totalChatInsertionEvents: item.total_chat_insertion_events,
+      totalChatCopyEvents: item.total_chat_copy_events,
+      timeFrameDisplay: item.time_frame_display
     };
   });
 

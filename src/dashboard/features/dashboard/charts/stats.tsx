@@ -19,8 +19,8 @@ export const Stats = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 col-span-4">
       <StatsCard
         title="Acceptance average"
-        description="Inline code acceptance average"
-        value={acceptanceAverage.toFixed(2) + "%"}
+        description="Combined acceptance average"
+        value={acceptanceAverage.toFixed(0) + "%"}
       ></StatsCard>
       <StatsCard
         title="Active users"
