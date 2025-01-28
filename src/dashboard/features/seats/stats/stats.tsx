@@ -54,7 +54,11 @@ export const Stats = () => {
         description="Total inactive users"
         value={totalSeatsData.total_inactive_seats.toString()}
       ></StatsCard>
-
+      <StatsCard
+        title="Adoption rate"
+        description="Adoption rate by total active users"
+        value={totalSeatsData.total_seats > 0 ? ((totalSeatsData.total_active_seats / totalSeatsData.total_seats) * 100 ).toFixed(0) + "%" : "0%"}
+      ></StatsCard>
     </div>
   );
 };
