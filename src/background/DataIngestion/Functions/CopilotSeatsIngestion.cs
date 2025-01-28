@@ -9,11 +9,11 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Functions;
 public class CopilotSeatsIngestion
 {
     private readonly ILogger _logger;
-    private readonly GitHubCopilotApiService _gitHubCopilotApiService;
+    private readonly GitHubCopilotSeatsClient _gitHubCopilotSeatsClient;
 
-    public CopilotSeatsIngestion(GitHubCopilotApiService gitHubCopilotApiService, ILogger<CopilotSeatsIngestion> logger)
+    public CopilotSeatsIngestion(GitHubCopilotSeatsClient gitHubCopilotSeatsClient, ILogger<CopilotSeatsIngestion> logger)
     {
-        _gitHubCopilotApiService = gitHubCopilotApiService;
+        _gitHubCopilotSeatsClient = gitHubCopilotSeatsClient;
         _logger = logger;
     }
 
@@ -38,13 +38,13 @@ public class CopilotSeatsIngestion
         {
             var enterprise = Environment.GetEnvironmentVariable("GITHUB_ENTERPRISE")!;
             _logger.LogInformation("Fetching GitHub Copilot seats for enterprise");
-            seats = await _gitHubCopilotApiService.GetEnterpriseAssignedSeatsAsync(enterprise, token);
+            seats = await _gitHubCopilotSeatsClient.GetEnterpriseAssignedSeatsAsync(enterprise, token);
         }
         else
         {
             var organization = Environment.GetEnvironmentVariable("GITHUB_ORGANIZATION")!;
             _logger.LogInformation("Fetching GitHub Copilot seats for organization");
-            seats = await _gitHubCopilotApiService.GetOrganizationAssignedSeatsAsync(organization, token);
+            seats = await _gitHubCopilotSeatsClient.GetOrganizationAssignedSeatsAsync(organization, token);
         }
 
         if (myTimer.ScheduleStatus is not null)
