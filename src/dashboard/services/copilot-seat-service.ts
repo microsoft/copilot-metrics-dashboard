@@ -30,7 +30,7 @@ export const getCopilotSeats = async (
     return env;
   }
 
-  const { enterprise, organization, token, version } = env.response;
+  const { enterprise, organization } = env.response;
 
   try {
     switch (process.env.GITHUB_API_SCOPE) {
@@ -166,7 +166,7 @@ const getCopilotSeatsFromApi = async (
         total_seats: 0,
         last_update: format(today, "yyyy-MM-ddTHH:mm:ss"),
         date: format(today, "yyyy-MM-dd"),
-        id: `${today}-ENT-${filter.organization}`,
+        id: `${today}-ORG-${filter.organization}`,
         enterprise: null,
       };
 
@@ -277,8 +277,7 @@ const getCopilotSeatsManagementFromApi = async (
             seat_breakdown: {
               total: enterpriseSeats.seats.length,
               active_this_cycle: activeSeats.length,
-              inactive_this_cycle:
-                enterpriseSeats.seats.length - activeSeats.length,
+              inactive_this_cycle: enterpriseSeats.seats.length - activeSeats.length,
               added_this_cycle: 0,
               pending_invitation: 0,
               pending_cancellation: 0,

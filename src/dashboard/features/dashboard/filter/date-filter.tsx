@@ -1,10 +1,10 @@
 "use client";
 
 import { CalendarIcon } from "@radix-ui/react-icons";
-import { format, isValid, parse } from "date-fns";
+import { format } from "date-fns";
 import * as React from "react";
 import { DateRange } from "react-day-picker";
-
+import { parseDate } from "@/utils/helpers";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,12 +19,6 @@ export const DateFilter = () => {
   const today = new Date();
   const lastThirtyOneDays = new Date(today);
   lastThirtyOneDays.setDate(today.getDate() - 31);
-
-  const parseDate = (dateStr: string | null) => {
-    if (!dateStr) return null;
-    const parsed = parse(dateStr, 'yyyy-MM-dd', new Date());
-    return isValid(parsed) ? parsed : null;
-  };
 
   const getInitialDateRange = () => {
     if (typeof window === 'undefined') {
