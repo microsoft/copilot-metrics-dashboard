@@ -10,6 +10,7 @@ import { DataTableColumnHeader } from "@/components/ui/data-table-column-header"
 interface SeatData {
     user: string;
     organization: string | null;
+    team: string | null;
     createdAt: string;
     updatedAt: string;
     lastActivityAt: string;
@@ -39,12 +40,13 @@ const stringIncludes = (row: any, id: string, value: string) => {
 const columns: ColumnDef<SeatData>[] = [
     { accessorKey: "user", title: "User", filter: stringIncludes },
     { accessorKey: "organization", title: "Organization", filter: arrayIncludes },
+    { accessorKey: "team", title: "Team", filter: arrayIncludes },
     { accessorKey: "createdAt", title: "Create Date" },
     { accessorKey: "updatedAt", title: "Update Date" },
     { accessorKey: "lastActivityAt", title: "Last Activity Date" },
     { accessorKey: "lastActivityEditor", title: "Last Activity Editor" },
     { accessorKey: "planType", title: "Plan", filter: arrayIncludes },
-    { accessorKey: "pendingCancellationDate", title: "Pending Cancellation" },
+    { accessorKey: "pendingCancellationDate", title: "Pending Cancellation" }
 ].map((col) => ({
     accessorKey: col.accessorKey,
     id: col.accessorKey,
@@ -63,6 +65,7 @@ export const SeatsList = () => {
     const { filteredData } = useDashboard();
     const currentData = filteredData;
     const hasOrganization = currentData?.seats.some((seat) => seat.organization);
+    const hasTeam = currentData?.seats.some((seat) => seat.assigning_team);
     return (
         <Card className="col-span-4">
             <ChartHeader
@@ -75,6 +78,7 @@ export const SeatsList = () => {
                     data={(currentData?.seats ?? []).map((seat) => ({
                         user: seat.assignee.login,
                         organization: seat.organization?.login,
+                        team: seat.assigning_team?.name,
                         createdAt: new Date(seat.created_at).toLocaleDateString(),
                         updatedAt: new Date(seat.updated_at).toLocaleDateString(),
                         lastActivityAt: seat.last_activity_at ? new Date(seat.last_activity_at).toLocaleDateString() : "-",
@@ -83,6 +87,7 @@ export const SeatsList = () => {
                         pendingCancellationDate: seat.pending_cancellation_date ? new Date(seat.pending_cancellation_date).toLocaleDateString() : "N/A",
                     }))}
                     initialVisibleColumns={{
+                        updatedAt: false,
                         planType: false,
                         pendingCancellationDate: false,
                     }}
@@ -90,7 +95,11 @@ export const SeatsList = () => {
                         column: "user",
                         placeholder: "Filter seats...",
                     }}
-                    filters={[...(hasOrganization ? [{ column: "organization", label: "Organizations" }] : []), { column: "planType", label: "Plan Type" }]}
+                    filters={[
+                        ...(hasOrganization ? [{ column: "organization", label: "Organizations" }] : []), 
+                        ...(hasTeam ? [{ column: "team", label: "Team" }] : []),
+                        { column: "planType", label: "Plan Type" }
+                    ]}
                     enableExport
                 />
             </CardContent>
