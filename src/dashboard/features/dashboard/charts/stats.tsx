@@ -19,17 +19,20 @@ export const Stats = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 col-span-4">
       <StatsCard
         title="Acceptance average"
+        tip="Acceptance average is the average of the acceptance rate for lines of code and chat suggestions, including chat insertion and copy events."
         description="Combined acceptance average"
         value={acceptanceAverage.toFixed(0) + "%"}
       ></StatsCard>
       <StatsCard
         title="Active users"
-        description="Average active users"
+        tip="The average number of Copilot users with daily activity belonging to any Copilot feature, for the given period. Includes passive activity such as receiving a code suggestion, as well as engagement activity such as accepting a code suggestion or prompting chat. Does not include authentication events."
+        description="Average of daily active users"
         value={averageActiveUsers.toFixed(0) + ""}
       ></StatsCard>
       <StatsCard
         title="Adoption rate"
-        description="Copilot adoption rate by active users"
+        tip="The adoption rate is the percentage of active seats compared to the total seats."
+        description="Adoption rate by active seats"
         value={adoptionRate.toFixed(0) + "%"}
       ></StatsCard>
       <Overview />
@@ -54,6 +57,7 @@ export const Overview = () => {
       <ChartHeader
         title={"Seat information"}
         description={"Overview of GitHub Copilot seats"}
+        tip={"The active seats are the seats where last activity is within the last 30 days. The inactive seats are the seats where last activity is null or older than 30 days."}
       />
       <CardContent className=" flex flex-col gap-2">
         <Item label="Total" value={total} />
