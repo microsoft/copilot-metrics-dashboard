@@ -1,5 +1,5 @@
 import { featuresEnvConfig } from "@/services/env-service";
-import { format, startOfWeek } from "date-fns";
+import { format, startOfWeek, parse, isValid } from "date-fns";
 import { CopilotMetrics, CopilotUsageOutput, Breakdown } from "@/features/common/models";
 
 export const applyTimeFrameLabel = (
@@ -82,6 +82,12 @@ export const formatDate = (date: string) => {
     month: "short",
     day: "numeric",
   });
+};
+
+export const parseDate = (dateStr: string | null) => {
+  if (!dateStr) return null;
+  const parsed = parse(dateStr, 'yyyy-MM-dd', new Date());
+  return isValid(parsed) ? parsed : null;
 };
 
 export const stringIsNullOrEmpty = (str: string | null | undefined) => {

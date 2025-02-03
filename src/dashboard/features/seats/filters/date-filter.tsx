@@ -3,6 +3,7 @@
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import * as React from "react";
+import { parseDate } from "@/utils/helpers";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -15,8 +16,21 @@ import { useRouter } from "next/navigation";
 
 export const DateFilter = () => {
   const today = new Date();
+  
+  const getInitialDate = () => {
+    if (typeof window == 'undefined') {
+      return today;
+    }
 
-  const [date, setDate] = React.useState<Date | undefined>(today);
+    const params = new URLSearchParams(window.location.search);
+    const date = parseDate(params.get('date'));
+    if (date) {
+      return date;
+    }
+    return today;
+  };
+
+  const [date, setDate] = React.useState<Date | undefined>(getInitialDate());
   const [isOpen, setIsOpen] = React.useState(false);
 
   const router = useRouter();

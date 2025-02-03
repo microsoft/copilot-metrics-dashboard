@@ -30,7 +30,7 @@ export const getCopilotSeats = async (
     return env;
   }
 
-  const { enterprise, organization, token, version } = env.response;
+  const { enterprise, organization } = env.response;
 
   try {
     switch (process.env.GITHUB_API_SCOPE) {
@@ -166,7 +166,7 @@ const getCopilotSeatsFromApi = async (
         total_seats: 0,
         last_update: format(today, "yyyy-MM-ddTHH:mm:ss"),
         date: format(today, "yyyy-MM-dd"),
-        id: `${today}-ENT-${filter.organization}`,
+        id: `${today}-ORG-${filter.organization}`,
         enterprise: null,
       };
 
@@ -185,9 +185,9 @@ const getCopilotSeatsFromApi = async (
           return formatResponseError(filter.organization, organizationResponse);
         }
 
-        const enterpriseData = await organizationResponse.json();
-        organizationSeats.seats.push(...enterpriseData.seats);
-        organizationSeats.total_seats = enterpriseData.total_seats;
+        const organizationData = await organizationResponse.json();
+        organizationSeats.seats.push(...organizationData.seats);
+        organizationSeats.total_seats = organizationData.total_seats;
 
         const linkHeader = organizationResponse.headers.get("Link");
         url = getNextUrlFromLinkHeader(linkHeader) || "";
@@ -212,7 +212,7 @@ export const getCopilotSeatsManagement = async (
     return env;
   }
 
-  const { enterprise, organization, token, version } = env.response;
+  const { enterprise, organization } = env.response;
 
   try {
     switch (process.env.GITHUB_API_SCOPE) {
@@ -227,114 +227,49 @@ export const getCopilotSeatsManagement = async (
         }
         break;
     }
-    return getCopilotSeatsManagementFromApi(filter);
-  } catch (e) {
-    return unknownResponseError(e);
-  }
-};
 
-const getCopilotSeatsManagementFromApi = async (
-  filter: IFilter
-): Promise<ServerActionResponse<CopilotSeatManagementData>> => {
-  const env = ensureGitHubEnvConfig();
-
-  if (env.status !== "OK") {
-    return env;
-  }
-
-  let { enterprise, organization, token, version } = env.response;
-
-  try {
-    switch (process.env.GITHUB_API_SCOPE) {
-      case "enterprise":
-        if (stringIsNullOrEmpty(filter.enterprise)) {
-          filter.enterprise = enterprise;
-        }
-        const today = new Date();
-        const enterpriseData = await getCopilotSeatsFromApi(filter);
-        
-        // Get the enterprise seats data
-        if (enterpriseData.status !== "OK" || !enterpriseData.response) {
-          return unknownResponseError(filter.enterprise);
-        }
-        const enterpriseSeats = enterpriseData.response;
-
-        // Copilot seats are considered active if they have been active in the last 30 days
-        const activeSeats = enterpriseSeats.seats.filter((seat) => {
-          const lastActivityDate = new Date(seat.last_activity_at);
-          const thirtyDaysAgo = new Date();
-          thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-          return lastActivityDate >= thirtyDaysAgo;
-        });
-        const seatManagementData: CopilotSeatManagementData = {
-          enterprise: enterpriseSeats.enterprise,
-          organization: enterpriseSeats.organization,
-          date: enterpriseSeats.date,
-          id: enterpriseSeats.id,
-          last_update: enterpriseSeats.last_update,
-          total_seats: enterpriseSeats.total_seats,
-          seats: {
-            seat_breakdown: {
-              total: enterpriseSeats.seats.length,
-              active_this_cycle: activeSeats.length,
-              inactive_this_cycle:
-                enterpriseSeats.seats.length - activeSeats.length,
-              added_this_cycle: 0,
-              pending_invitation: 0,
-              pending_cancellation: 0,
-            },
-            seat_management_setting: "",
-            public_code_suggestions: "",
-            ide_chat: "",
-            platform_chat: "",
-            cli: "",
-            plan_type: "",
-          },
-        };
-
-        return {
-          status: "OK",
-          response: seatManagementData as CopilotSeatManagementData,
-        };
-        break;
-
-      default:
-        if (stringIsNullOrEmpty(filter.organization)) {
-          filter.organization = organization;
-        }
-        const response = await fetch(
-          `https://api.github.com/orgs/${filter.organization}/copilot/billing`,
-          {
-            cache: "no-store",
-            headers: {
-              Accept: `application/vnd.github+json`,
-              Authorization: `Bearer ${token}`,
-              "X-GitHub-Api-Version": version,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          return formatResponseError(filter.organization, response);
-        }
-
-        const seats = await response.json();
-        const _today = new Date();
-        const data: CopilotSeatManagementData = {
-          id: `${format(_today, "yyyy-MM-dd")}-ORG-${filter.organization}`,
-          date: format(_today, "yyyy-MM-dd"),
-          last_update: format(_today, "yyyy-MM-ddTHH:mm:ss"),
-          total_seats: seats.total_seats,
-          seats: seats as CopilotSeatManagementData["seats"],
-          enterprise: filter.enterprise,
-          organization: filter.organization,
-        };
-        return {
-          status: "OK",
-          response: data as CopilotSeatManagementData,
-        };
-        break;
+    const data = await getCopilotSeats(filter);
+    if (data.status !== "OK" || !data.response) {
+      return unknownResponseError(filter.enterprise);
     }
+    const seatsData = data.response;
+
+    // Copilot seats are considered active if they have been active in the last 30 days
+    const activeSeats = seatsData.seats.filter((seat) => {
+      const lastActivityDate = new Date(seat.last_activity_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return lastActivityDate >= thirtyDaysAgo;
+    });
+    const seatManagementData: CopilotSeatManagementData = {
+      enterprise: seatsData.enterprise,
+      organization: seatsData.organization,
+      date: seatsData.date,
+      id: seatsData.id,
+      last_update: seatsData.last_update,
+      total_seats: seatsData.total_seats,
+      seats: {
+        seat_breakdown: {
+          total: seatsData.seats.length,
+          active_this_cycle: activeSeats.length,
+          inactive_this_cycle: seatsData.seats.length - activeSeats.length,
+          added_this_cycle: 0,
+          pending_invitation: 0,
+          pending_cancellation: 0,
+        },
+        seat_management_setting: "",
+        public_code_suggestions: "",
+        ide_chat: "",
+        platform_chat: "",
+        cli: "",
+        plan_type: "",
+      },
+    };
+
+    return {
+      status: "OK",
+      response: seatManagementData as CopilotSeatManagementData,
+    };
   } catch (e) {
     return unknownResponseError(e);
   }
