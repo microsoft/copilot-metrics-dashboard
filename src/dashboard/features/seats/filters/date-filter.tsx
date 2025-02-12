@@ -14,7 +14,11 @@ import {
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-export const DateFilter = () => {
+interface DateFilterProps {
+  disabled?: boolean;
+}
+
+export const DateFilter = ({ disabled = false }: DateFilterProps) => {
   const today = new Date();
   
   const getInitialDate = () => {
@@ -49,11 +53,12 @@ export const DateFilter = () => {
 
   return (
     <div className={cn("grid gap-2")}>
-      <Popover open={isOpen} onOpenChange={(open) => setIsOpen(open)}>
+      <Popover open={isOpen && !disabled} onOpenChange={(open) => !disabled && setIsOpen(open)}>
         <PopoverTrigger asChild>
           <Button
             id="date"
             variant={"outline"}
+            disabled={disabled}
             className={cn(
               "w-[170px] justify-start text-left font-normal",
               !date && "text-muted-foreground"
