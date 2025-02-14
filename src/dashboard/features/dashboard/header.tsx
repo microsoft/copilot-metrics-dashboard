@@ -3,7 +3,11 @@ import { WeekendFilter } from "./filter/weekend-filter";
 import { DateFilter } from "./filter/date-filter";
 import { Filters } from "./filter/header-filter";
 
-export const Header = () => {
+interface HeaderProps {
+  isCosmosDb?: boolean;
+}
+
+export const Header = ({ isCosmosDb }: HeaderProps) => {
   return (
     <PageHeader>
       <PageTitle>GitHub Copilot Metrics</PageTitle>
@@ -11,7 +15,7 @@ export const Header = () => {
         <Filters />
         <div className="flex gap-2">
           <WeekendFilter />
-          <DateFilter />
+          <DateFilter limited={!isCosmosDb} />
         </div>
       </div>
     </PageHeader>

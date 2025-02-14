@@ -51,6 +51,14 @@ export const DateFilter = ({ disabled = false }: DateFilterProps) => {
     }
   };
 
+  const resetFilters = () => {
+    router.push(`/`, {
+      scroll: false,
+    });
+    router.refresh();
+    setIsOpen(false);
+  };
+
   return (
     <div className={cn("grid gap-2")}>
       <Popover open={isOpen && !disabled} onOpenChange={(open) => !disabled && setIsOpen(open)}>
@@ -60,7 +68,7 @@ export const DateFilter = ({ disabled = false }: DateFilterProps) => {
             variant={"outline"}
             disabled={disabled}
             className={cn(
-              "w-[170px] justify-start text-left font-normal",
+              "justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -88,9 +96,17 @@ export const DateFilter = ({ disabled = false }: DateFilterProps) => {
             }}
             numberOfMonths={1}
           />
-          <Button onClick={applyFilters} className="self-end m-2">
-            Apply
-          </Button>
+          <div className="flex justify-between m-2 gap-2">
+            <Button 
+              onClick={resetFilters} 
+              variant="outline"
+            >
+              Reset
+            </Button>
+            <Button onClick={applyFilters}>
+              Apply
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

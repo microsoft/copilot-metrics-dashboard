@@ -13,6 +13,7 @@ import { TimeFrameToggle } from "./filter/time-frame-toggle";
 import { Header } from "./header";
 import { getCopilotMetrics, IFilter as MetricsFilter } from "@/services/copilot-metrics-service";
 import { getCopilotSeatsManagement, IFilter as SeatServiceFilter } from "@/services/copilot-seat-service";
+import { cosmosConfiguration } from "@/services/cosmos-db-service";
 
 export interface IProps {
   searchParams: MetricsFilter;
@@ -22,6 +23,7 @@ export default async function Dashboard(props: IProps) {
   const allDataPromise = getCopilotMetrics(props.searchParams);
   const seatsPromise = getCopilotSeatsManagement({} as SeatServiceFilter);
   const [allData, seats] = await Promise.all([allDataPromise, seatsPromise]);
+  const isCosmosDb = cosmosConfiguration();
 
   if (allData.status !== "OK") {
     return <ErrorPage error={allData.errors[0].message} />;
@@ -37,7 +39,7 @@ export default async function Dashboard(props: IProps) {
       seatManagement={seats.response?.seats}
     >
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
-        <Header />
+        <Header isCosmosDb={isCosmosDb}/>
 
         <div className="mx-auto w-full max-w-6xl container">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
