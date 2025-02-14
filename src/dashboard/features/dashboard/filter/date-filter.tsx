@@ -61,7 +61,7 @@ export const DateFilter = () => {
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[270px] justify-start text-left font-normal",
+              "justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
