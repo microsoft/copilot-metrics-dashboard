@@ -26,6 +26,7 @@ class DashboardState {
   public languages: DropdownFilterItem[] = [];
   public editors: DropdownFilterItem[] = [];
   public timeFrame: TimeFrame = "weekly";
+  public hideWeekends: boolean = false;
 
   public seatManagement: SeatManagement = {} as SeatManagement;
 
@@ -59,9 +60,15 @@ class DashboardState {
     }
   }
 
+  public toggleWeekendFilter(hide: boolean): void {
+    this.hideWeekends = hide;
+    this.applyFilters();
+  }
+
   public resetAllFilters(): void {
     this.languages.forEach((item) => (item.isSelected = false));
     this.editors.forEach((item) => (item.isSelected = false));
+    this.hideWeekends = false;
     this.applyFilters();
   }
 
@@ -71,7 +78,7 @@ class DashboardState {
   }
 
   private applyFilters(): void {
-    const data = this.aggregatedDataByTimeFrame();
+    const data = this.aggregatedDataByTimeFrame(this.hideWeekends);
 
     const selectedLanguages = this.languages.filter((item) => item.isSelected);
     const selectedEditors = this.editors.filter((item) => item.isSelected);
@@ -96,8 +103,7 @@ class DashboardState {
       });
     }
 
-    const filtered = data.filter((item) => item.breakdown.length > 0);
-    this.filteredData = filtered;
+    this.filteredData = data.filter((item) => item.breakdown.length > 0);
   }
 
   private extractUniqueLanguages(): DropdownFilterItem[] {
@@ -135,10 +141,16 @@ class DashboardState {
     return editors;
   }
 
-  private aggregatedDataByTimeFrame() {
-    const items = JSON.parse(
-      JSON.stringify(this.apiData)
-    ) as Array<CopilotUsageOutput>;
+  private aggregatedDataByTimeFrame(hideWeekends: boolean) {
+    let items = JSON.parse(JSON.stringify(this.apiData)) as CopilotUsageOutput[];
+    
+    if (hideWeekends) {
+      items = items.filter(item => {
+        const date = new Date(item.day);
+        const day = date.getDay();
+        return day !== 0 && day !== 6; // 0 is Sunday, 6 is Saturday
+      });
+    }
 
     if (this.timeFrame === "daily") {
       items.forEach((item) => {
