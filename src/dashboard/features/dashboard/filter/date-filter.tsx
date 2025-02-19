@@ -15,14 +15,19 @@ import {
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
-export const DateFilter = () => {
+interface DateFilterProps {
+  limited?: boolean;
+}
+
+export const DateFilter = ({ limited = false }: DateFilterProps) => {
   const today = new Date();
-  const lastThirtyOneDays = new Date(today);
-  lastThirtyOneDays.setDate(today.getDate() - 31);
+  const defaultDays = limited ? 27 : 31;
+  const lastDays = new Date(today);
+  lastDays.setDate(today.getDate() - defaultDays);
 
   const getInitialDateRange = () => {
     if (typeof window === 'undefined') {
-      return { from: lastThirtyOneDays, to: today };
+      return { from: lastDays, to: today };
     }
     
     const params = new URLSearchParams(window.location.search);
@@ -32,18 +37,18 @@ export const DateFilter = () => {
     if (startDate && endDate) {
       return { from: startDate, to: endDate };
     }
-    return { from: lastThirtyOneDays, to: today };
+    return { from: lastDays, to: today };
   };
 
-  const [date, setDate] = React.useState<DateRange>(getInitialDateRange());
+  const [date, setDate] = React.useState<DateRange | undefined>(getInitialDateRange());
   const [isOpen, setIsOpen] = React.useState(false);
 
   const router = useRouter();
 
   const applyFilters = () => {
-    if (date.from && date.to) {
-      const formatEndDate = format(date?.to, "yyyy-MM-dd");
-      const formatStartDate = format(date?.from, "yyyy-MM-dd");
+    if (date?.from && date?.to) {
+      const formatEndDate = format(date.to, "yyyy-MM-dd");
+      const formatStartDate = format(date.from, "yyyy-MM-dd");
 
       router.push(`?startDate=${formatStartDate}&endDate=${formatEndDate}`, {
         scroll: false,
@@ -51,6 +56,14 @@ export const DateFilter = () => {
       router.refresh();
       setIsOpen(false);
     }
+  };
+
+  const resetFilters = () => {    
+    router.push(`/`, {
+      scroll: false,
+    });
+    router.refresh();
+    setIsOpen(false);
   };
 
   return (
@@ -61,7 +74,7 @@ export const DateFilter = () => {
             id="date"
             variant={"outline"}
             className={cn(
-              "w-[270px] justify-start text-left font-normal",
+              "justify-start text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
@@ -89,16 +102,21 @@ export const DateFilter = () => {
             mode="range"
             defaultMonth={date?.from}
             selected={date}
-            onSelect={(range) => {
-              if (range) {
-                setDate(range);
-              }
-            }}
+            onSelect={setDate}
             numberOfMonths={2}
+            disabled={limited ? { before: new Date(today.getTime() - (27 * 24 * 60 * 60 * 1000)) } : undefined}
           />
-          <Button onClick={applyFilters} className="self-end m-2">
-            Apply
-          </Button>
+          <div className="flex justify-between m-2 gap-2">
+            <Button 
+              onClick={resetFilters} 
+              variant="outline"
+            >
+              Reset
+            </Button>
+            <Button onClick={applyFilters}>
+              Apply
+            </Button>
+          </div>
         </PopoverContent>
       </Popover>
     </div>

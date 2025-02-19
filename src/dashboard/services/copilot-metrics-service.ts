@@ -56,9 +56,36 @@ export const getCopilotMetrics = async (
   }
 };
 
-export const getCopilotMetricsFromApi = async (filter: IFilter): Promise<
-  ServerActionResponse<CopilotUsageOutput[]>
-> => {
+const fetchCopilotMetrics = async (
+  url: string,
+  token: string,
+  version: string,
+  entityName: string
+): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: {
+      Accept: `application/vnd.github+json`,
+      Authorization: `Bearer ${token}`,
+      "X-GitHub-Api-Version": version,
+    },
+  });
+
+  if (!response.ok) {
+    return formatResponseError(entityName, response);
+  }
+
+  const data = await response.json();
+  const dataWithTimeFrame = applyTimeFrameLabel(data);
+  return {
+    status: "OK",
+    response: dataWithTimeFrame,
+  };
+};
+
+export const getCopilotMetricsFromApi = async (
+  filter: IFilter
+): Promise<ServerActionResponse<CopilotUsageOutput[]>> => {
   const env = ensureGitHubEnvConfig();
 
   if (env.status !== "OK") {
@@ -68,52 +95,23 @@ export const getCopilotMetricsFromApi = async (filter: IFilter): Promise<
   const { token, version } = env.response;
 
   try {
-    if(filter.enterprise) {
-      const response = await fetch(
-        `https://api.github.com/enterprises/${filter.enterprise}/copilot/metrics`,
-        {
-          cache: "no-store",
-          headers: {
-            Accept: `application/vnd.github+json`,
-            Authorization: `Bearer ${token}`,
-            "X-GitHub-Api-Version": version,
-          },
-        }
-      );
-  
-      if (!response.ok) {
-        return formatResponseError(filter.enterprise, response);
-      }
-  
-      const data = await response.json();
-      const dataWithTimeFrame = applyTimeFrameLabel(data);
-      return {
-        status: "OK",
-        response: dataWithTimeFrame,
-      };
+    const queryParams = new URLSearchParams();
+    
+    if (filter.startDate) {
+      queryParams.append('since', format(filter.startDate, "yyyy-MM-dd"));
+    }
+    if (filter.endDate) {
+      queryParams.append('until', format(filter.endDate, "yyyy-MM-dd"));
+    }
+    
+    const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+    if (filter.enterprise) {
+      const url = `https://api.github.com/enterprises/${filter.enterprise}/copilot/metrics${queryString}`;
+      return fetchCopilotMetrics(url, token, version, filter.enterprise);
     } else {
-      const response = await fetch(
-        `https://api.github.com/orgs/${filter.organization}/copilot/metrics`,
-        {
-          cache: "no-store",
-          headers: {
-            Accept: `application/vnd.github+json`,
-            Authorization: `Bearer ${token}`,
-            "X-GitHub-Api-Version": version,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        return formatResponseError(filter.organization, response);
-      }
-
-      const data = await response.json();
-      const dataWithTimeFrame = applyTimeFrameLabel(data);
-      return {
-        status: "OK",
-        response: dataWithTimeFrame,
-      };
+      const url = `https://api.github.com/orgs/${filter.organization}/copilot/metrics${queryString}`;
+      return fetchCopilotMetrics(url, token, version, filter.organization);
     }
   } catch (e) {
     return unknownResponseError(e);

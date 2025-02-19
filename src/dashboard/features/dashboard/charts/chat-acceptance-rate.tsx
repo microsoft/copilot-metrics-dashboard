@@ -37,7 +37,6 @@ export const ChatAcceptanceRate = () => {
               axisLine={false}
               tickMargin={8}
               allowDataOverflow
-              domain={[0, 100]}
             />
             <XAxis
               dataKey={chartConfig.timeFrameDisplay.key}

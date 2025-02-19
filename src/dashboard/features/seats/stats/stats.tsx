@@ -40,23 +40,23 @@ export const Stats = () => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 col-span-4">
       <StatsCard
-        title="Total users"
+        title="Total seats"
         description="Total assigned seats"
         value={totalSeatsData.total_seats.toString()}
       ></StatsCard>
       <StatsCard
-        title="Active users"
-        description="Total active users"
+        title="Active seats"
+        description="Total active seats"
         value={totalSeatsData.total_active_seats.toString()}
       ></StatsCard>
       <StatsCard
-        title="Inactive users"
-        description="Total inactive users"
+        title="Inactive seats"
+        description="Total inactive seats"
         value={totalSeatsData.total_inactive_seats.toString()}
       ></StatsCard>
       <StatsCard
         title="Adoption rate"
-        description="Adoption rate by total active users"
+        description="Adoption rate by total active seats"
         value={totalSeatsData.total_seats > 0 ? ((totalSeatsData.total_active_seats / totalSeatsData.total_seats) * 100 ).toFixed(0) + "%" : "0%"}
       ></StatsCard>
     </div>

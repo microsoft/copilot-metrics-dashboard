@@ -60,9 +60,9 @@ export const Overview = () => {
         tip={"The active seats are the seats where last activity is within the last 30 days. The inactive seats are the seats where last activity is null or older than 30 days."}
       />
       <CardContent className=" flex flex-col gap-2">
-        <Item label="Total" value={total} />
-        <Item label="Active" value={active_this_cycle} />
-        <Item label="Inactive" value={inactive_this_cycle} />
+        <Item label="Total seats" value={total} />
+        <Item label="Active seats" value={active_this_cycle} />
+        <Item label="Inactive seats" value={inactive_this_cycle} />
       </CardContent>
     </Card>
   );

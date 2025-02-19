@@ -7,7 +7,6 @@ import { DropdownFilter } from "./dropdown-filter";
 
 export function Filters() {
   const { editors: allEditors } = useDashboard();
-
   const { languages: allLanguages } = useDashboard();
 
   return (
