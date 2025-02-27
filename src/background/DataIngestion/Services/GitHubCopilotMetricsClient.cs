@@ -47,14 +47,27 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
 
         private async Task<Metrics[]> GetMetrics(string requestUri, MetricsType type, string orgOrEnterpriseName, string? team = null)
         {
-            var response = await _httpClient.GetAsync(requestUri);
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                var response = await _httpClient.GetAsync(requestUri);
+                if (!response.IsSuccessStatusCode)
+                {
+                    if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                    {
+                        _logger.LogWarning($"Team not found: {team}. Continuing with available data.");
+                        return Array.Empty<Metrics>();
+                    }
+                    throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                }
+                _logger.LogInformation($"Fetched data from {requestUri}");
+                var metrics = AddInfo((await response.Content.ReadFromJsonAsync<Metrics[]>())!, type, orgOrEnterpriseName, team);
+                return metrics;
             }
-            _logger.LogInformation($"Fetched data from {requestUri}");
-            var metrics = AddInfo((await response.Content.ReadFromJsonAsync<Metrics[]>())!, type, orgOrEnterpriseName, team);
-            return metrics;
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, $"Error fetching data from {requestUri}");
+                return Array.Empty<Metrics>();
+            }
         }
 
         public async ValueTask<Metrics[]> GetTestCopilotMetrics(string? team)
