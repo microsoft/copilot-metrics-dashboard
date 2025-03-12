@@ -52,7 +52,7 @@ export const DateFilter = ({ disabled = false }: DateFilterProps) => {
   };
 
   const resetFilters = () => {
-    router.push(`/`, {
+    router.push(`/seats`, {
       scroll: false,
     });
     router.refresh();
