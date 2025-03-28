@@ -1,6 +1,10 @@
 # GitHub Copilot Metrics - Dashboard
 
 1. [Introduction](#introduction)
+    * [Dashboard](#dashboard)
+        * [Features](#features)
+        * [Getting Started Locally](#getting-started-locally)
+    * [Seats](#seats)
 2. [Deploy to Azure](#deploy-to-azure)
 
 # Introduction
@@ -10,6 +14,8 @@ The GitHub Copilot Metrics Dashboard is a solution accelerator designed to visua
 ## Dashboard
 
 ![GitHub Copilot Metrics - Dashboard](/docs/dashboard.jpeg "GitHub Copilot Metrics - Dashboard")
+
+### Features
 
 The dashboard showcases a range of features:
 
@@ -27,6 +33,62 @@ Ability to filter metrics by date range, languages, code editors and visualise d
 **Language:** Breakdown of languages which can be used to filter the data.
 
 **Code Editors:** Breakdown of code editors which can be used to filter the data.
+
+### Getting Started Locally
+
+To run the dashboard on your local machine, head to the **dashboard** folder under **src**:
+```
+📦copilot-metrics-dashboard
+ ┣ 📂.github
+ ┣ 📂docs
+ ┣ 📂infra
+ ┣ 📂src
+ ┃ ┣  📂dashboard
+ ┃ ┗ ...
+ ┗ ...
+
+```
+#### Environment Variables
+
+You will be required to enter the following information in an **.env** file:
+
+```
+- GitHub Enterprise name
+- GitHub Organization name
+- GitHub Token
+- GitHub API Scope
+- Team Names (if you choose to use the new metrics API)
+```
+
+You can use the **.env.example** file as a reference. GitHub API Scope defines the GITHUB_API_SCOPE environment variable and can be set to either "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
+
+#### Install & Run
+
+Open the terminal while in the **dashboard** directory and do the following:
+
+First, install packages using:
+```bash
+npm install
+# or
+yarn install
+# or
+pnpm install
+# or
+bun install
+```
+Then, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Seats
 
@@ -61,7 +123,7 @@ You will be prompted to provide the following information:
 
 > Team Names must be a valid JSON array, e.g. ``["team-1", "team-2]``
 
-GitHub API Scope define the GITHUB_API_SCOPE environment variable that can be "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
+GitHub API Scope defines the GITHUB_API_SCOPE environment variable and can be set to either "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
 
 1. Download the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/overview)
 2. If you have not cloned this repo, run `azd init -t microsoft/copilot-metrics-dashboard`. If you have cloned this repo, just run 'azd init' from the repo root directory.
