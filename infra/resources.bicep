@@ -141,9 +141,9 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
     serverFarmId: appServicePlan.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'node|20-lts'
+      linuxFxVersion: 'node|22-lts'
       alwaysOn: true
-      appCommandLine: 'next start'
+      appCommandLine: 'node .next/standalone/server.js'
       ftpsState: 'Disabled'
       minTlsVersion: '1.2'
       appSettings: [
