@@ -20,13 +20,13 @@ export interface IProps {
 }
 
 export default async function Dashboard(props: IProps) {
-  const allDataPromise = getCopilotMetrics(props.searchParams);
+  const metricsPromise = getCopilotMetrics(props.searchParams);
   const seatsPromise = getCopilotSeatsManagement({} as SeatServiceFilter);
-  const [allData, seats] = await Promise.all([allDataPromise, seatsPromise]);
+  const [metrics, seats] = await Promise.all([metricsPromise, seatsPromise]);
   const isCosmosDb = cosmosConfiguration();
 
-  if (allData.status !== "OK") {
-    return <ErrorPage error={allData.errors[0].message} />;
+  if (metrics.status !== "OK") {
+    return <ErrorPage error={metrics.errors[0].message} />;
   }
 
   if (seats.status !== "OK") {
@@ -35,7 +35,7 @@ export default async function Dashboard(props: IProps) {
 
   return (
     <DataProvider
-      copilotUsages={allData.response}
+      copilotUsages={metrics.response}
       seatManagement={seats.response?.seats}
     >
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
