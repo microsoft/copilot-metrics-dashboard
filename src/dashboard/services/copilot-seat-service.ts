@@ -57,53 +57,57 @@ export const getCopilotSeats = async (
 const getCopilotSeatsFromDatabase = async (
   filter: IFilter
 ): Promise<ServerActionResponse<CopilotSeatsData>> => {
-  const client = cosmosClient();
-  const database = client.database("platform-engineering");
-  const container = database.container("seats_history");
+  try {
+    const client = cosmosClient();
+    const database = client.database("platform-engineering");
+    const container = database.container("seats_history");
 
-  let date = "";
-  const maxDays = 365 * 2; // maximum 2 years of data
+    let date = "";
+    const maxDays = 365 * 2; // maximum 2 years of data
 
-  if (filter.date) {
-    date = format(filter.date, "yyyy-MM-dd");
-  } else {
-    const today = new Date();
-    date = format(today, "yyyy-MM-dd");
+    if (filter.date) {
+      date = format(filter.date, "yyyy-MM-dd");
+    } else {
+      const today = new Date();
+      date = format(today, "yyyy-MM-dd");
+    }
+
+    let querySpec: SqlQuerySpec = {
+      query: `SELECT * FROM c WHERE c.date = @date`,
+      parameters: [{ name: "@date", value: date }],
+    };
+    if (filter.enterprise) {
+      querySpec.query += ` AND c.enterprise = @enterprise`;
+      querySpec.parameters?.push({
+        name: "@enterprise",
+        value: filter.enterprise,
+      });
+    }
+    if (filter.organization) {
+      querySpec.query += ` AND c.organization = @organization`;
+      querySpec.parameters?.push({
+        name: "@organization",
+        value: filter.organization,
+      });
+    }
+    if (filter.team) {
+      querySpec.query += ` AND c.team = @team`;
+      querySpec.parameters?.push({ name: "@team", value: filter.team });
+    }
+
+    const { resources } = await container.items
+      .query<CopilotSeatsData>(querySpec, {
+        maxItemCount: maxDays,
+      })
+      .fetchAll();
+
+    return {
+      status: "OK",
+      response: resources[0],
+    };
+  } catch (e) {
+    return unknownResponseError(e);
   }
-
-  let querySpec: SqlQuerySpec = {
-    query: `SELECT * FROM c WHERE c.date = @date`,
-    parameters: [{ name: "@date", value: date }],
-  };
-  if (filter.enterprise) {
-    querySpec.query += ` AND c.enterprise = @enterprise`;
-    querySpec.parameters?.push({
-      name: "@enterprise",
-      value: filter.enterprise,
-    });
-  }
-  if (filter.organization) {
-    querySpec.query += ` AND c.organization = @organization`;
-    querySpec.parameters?.push({
-      name: "@organization",
-      value: filter.organization,
-    });
-  }
-  if (filter.team) {
-    querySpec.query += ` AND c.team = @team`;
-    querySpec.parameters?.push({ name: "@team", value: filter.team });
-  }
-
-  const { resources } = await container.items
-    .query<CopilotSeatsData>(querySpec, {
-      maxItemCount: maxDays,
-    })
-    .fetchAll();
-
-  return {
-    status: "OK",
-    response: resources[0],
-  };
 };
 
 const getCopilotSeatsFromApi = async (
@@ -228,31 +232,18 @@ export const getCopilotSeatsManagement = async (
         break;
     }
 
-    const data = await getCopilotSeats(filter);
-    if (data.status !== "OK" || !data.response) {
-      return unknownResponseError(filter.enterprise);
-    }
-    const seatsData = data.response;
-
-    // Copilot seats are considered active if they have been active in the last 30 days
-    const activeSeats = seatsData.seats.filter((seat) => {
-      const lastActivityDate = new Date(seat.last_activity_at);
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      return lastActivityDate >= thirtyDaysAgo;
-    });
     const seatManagementData: CopilotSeatManagementData = {
-      enterprise: seatsData.enterprise,
-      organization: seatsData.organization,
-      date: seatsData.date,
-      id: seatsData.id,
-      last_update: seatsData.last_update,
-      total_seats: seatsData.total_seats,
+      enterprise: null,
+      organization: null,
+      date: "",
+      id: "",
+      last_update: "",
+      total_seats: 0,
       seats: {
         seat_breakdown: {
-          total: seatsData.seats.length,
-          active_this_cycle: activeSeats.length,
-          inactive_this_cycle: seatsData.seats.length - activeSeats.length,
+          total: 0,
+          active_this_cycle: 0,
+          inactive_this_cycle: 0,
           added_this_cycle: 0,
           pending_invitation: 0,
           pending_cancellation: 0,
@@ -266,6 +257,33 @@ export const getCopilotSeatsManagement = async (
       },
     };
 
+    const data = await getCopilotSeats(filter);
+    if (data.status !== "OK" || !data.response) {
+      return {
+        status: "OK",
+        response: seatManagementData as CopilotSeatManagementData,
+      };
+    }
+
+    const seatsData = data.response;
+    
+    // Copilot seats are considered active if they have been active in the last 30 days
+    const activeSeats = seatsData.seats.filter((seat) => {
+      const lastActivityDate = new Date(seat.last_activity_at);
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      return lastActivityDate >= thirtyDaysAgo;
+    });
+    seatManagementData.enterprise = seatsData.enterprise;
+    seatManagementData.organization = seatsData.organization;
+    seatManagementData.date =  seatsData.date;
+    seatManagementData.id = seatsData.id;
+    seatManagementData.last_update = seatsData.last_update;
+    seatManagementData.total_seats = seatsData.total_seats;
+    seatManagementData.seats.seat_breakdown.total = seatsData.seats.length;
+    seatManagementData.seats.seat_breakdown.active_this_cycle = activeSeats.length;
+    seatManagementData.seats.seat_breakdown.inactive_this_cycle = seatsData.seats.length - activeSeats.length;
+    
     return {
       status: "OK",
       response: seatManagementData as CopilotSeatManagementData,
