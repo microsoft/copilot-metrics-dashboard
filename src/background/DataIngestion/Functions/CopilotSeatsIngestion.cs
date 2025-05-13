@@ -19,12 +19,9 @@ public class CopilotSeatsIngestion
 
     [Function("GitHubCopilotSeatsIngestion")]
     [CosmosDBOutput(databaseName: "platform-engineering", containerName: "seats_history", Connection = "AZURE_COSMOSDB_ENDPOINT", CreateIfNotExists = true)]
-
-    public async Task<CopilotAssignedSeats> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
+    public async Task<IEnumerable<CopilotSeats>> Run([TimerTrigger("0 0 * * * *")] TimerInfo myTimer)
     {
         _logger.LogInformation($"GitHubCopilotSeatsIngestion timer trigger function executed at: {DateTime.Now}");
-
-        CopilotAssignedSeats seats;
 
         var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")!;
         var scope = Environment.GetEnvironmentVariable("GITHUB_API_SCOPE")!;
@@ -32,19 +29,22 @@ public class CopilotSeatsIngestion
         if (!seatsIngestionEnabled)
         {
             _logger.LogInformation("Seats ingestion is disabled");
-            return null!;
+            return Array.Empty<CopilotSeats>();
         }
+
+        IEnumerable<CopilotSeats> seatsPages;
+
         if (!string.IsNullOrWhiteSpace(scope) && scope == "enterprise")
         {
             var enterprise = Environment.GetEnvironmentVariable("GITHUB_ENTERPRISE")!;
             _logger.LogInformation("Fetching GitHub Copilot seats for enterprise");
-            seats = await _gitHubCopilotSeatsClient.GetEnterpriseAssignedSeatsAsync(enterprise, token);
+            seatsPages = await _gitHubCopilotSeatsClient.GetEnterpriseAssignedSeatsPagesAsync(enterprise, token);
         }
         else
         {
             var organization = Environment.GetEnvironmentVariable("GITHUB_ORGANIZATION")!;
             _logger.LogInformation("Fetching GitHub Copilot seats for organization");
-            seats = await _gitHubCopilotSeatsClient.GetOrganizationAssignedSeatsAsync(organization, token);
+            seatsPages = await _gitHubCopilotSeatsClient.GetOrganizationAssignedSeatsPagesAsync(organization, token);
         }
 
         if (myTimer.ScheduleStatus is not null)
@@ -52,6 +52,6 @@ public class CopilotSeatsIngestion
             _logger.LogInformation($"Finished ingestion. Next timer schedule at: {myTimer.ScheduleStatus.Next}");
         }
 
-        return seats;
+        return seatsPages;
     }
 }

@@ -20,14 +20,14 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             _logger = logger;
         }
 
-        public async Task<CopilotAssignedSeats> GetEnterpriseAssignedSeatsAsync(string enterprise)
+        public async Task<CopilotSeats> GetEnterpriseAssignedSeatsAsync(string enterprise)
         {
             var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")!;
             return await GetEnterpriseAssignedSeatsAsync(enterprise, token);
 
         }
 
-        public async Task<CopilotAssignedSeats> GetEnterpriseAssignedSeatsAsync(string enterprise, string token)
+        public async Task<CopilotSeats> GetEnterpriseAssignedSeatsAsync(string enterprise, string token)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -41,7 +41,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             }
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-            var url = $"/enterprises/{enterprise}/copilot/billing/seats";
+            var url = $"/enterprises/{enterprise}/copilot/billing/seats?per_page=100";
             var allSeats = new List<Seat>(); 
             while (url != null)
             {
@@ -52,13 +52,13 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                     throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
                 }
                 var content = await response.Content.ReadAsStringAsync();
-                var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
+                var data = JsonSerializer.Deserialize<CopilotSeats>(content)!;
                 allSeats.AddRange(data.Seats!); 
 
                 url = Helpers.GetNextPageUrl(response.Headers);
             }
 
-            return new CopilotAssignedSeats
+            return new CopilotSeats
             {
                 TotalSeats = allSeats.Count,
                 Enterprise = enterprise,
@@ -69,13 +69,13 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
            
         }
 
-        public async Task<CopilotAssignedSeats> GetOrganizationAssignedSeatsAsync(string organization)
+        public async Task<CopilotSeats> GetOrganizationAssignedSeatsAsync(string organization)
         {
             var token = Environment.GetEnvironmentVariable("GITHUB_TOKEN")!;
             return await GetOrganizationAssignedSeatsAsync(organization, token);
         }
 
-        public async Task<CopilotAssignedSeats> GetOrganizationAssignedSeatsAsync(string organization, string token)
+        public async Task<CopilotSeats> GetOrganizationAssignedSeatsAsync(string organization, string token)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -89,7 +89,7 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
             }
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-            var url = $"/orgs/{organization}/copilot/billing/seats";
+            var url = $"/orgs/{organization}/copilot/billing/seats?per_page=100";
             var allSeats = new List<Seat>();
             while (!string.IsNullOrEmpty(url))
             {
@@ -100,13 +100,13 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                     throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
                 }
                 var content = await response.Content.ReadAsStringAsync();
-                var data = JsonSerializer.Deserialize<CopilotAssignedSeats>(content)!;
+                var data = JsonSerializer.Deserialize<CopilotSeats>(content)!;
                 allSeats.AddRange(data.Seats!);
 
                 url = Helpers.GetNextPageUrl(response.Headers);
             }
 
-            return new CopilotAssignedSeats
+            return new CopilotSeats
             {
                 TotalSeats = allSeats.Count,
                 Organization = organization,
@@ -115,6 +115,94 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 Seats = allSeats
             };
 
+        }
+
+        public async Task<List<CopilotSeats>> GetEnterpriseAssignedSeatsPagesAsync(string enterprise, string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogError("Token is null or empty");
+                throw new ArgumentNullException(nameof(token));
+            }
+            if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
+            }
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+            var url = $"/enterprises/{enterprise}/copilot/billing/seats?per_page=100";
+            var page = 1;
+            var seatPages = new List<CopilotSeats>();
+            while (!string.IsNullOrEmpty(url))
+            {
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
+                    throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                }
+                url = Helpers.GetNextPageUrl(response.Headers);
+                var content = await response.Content.ReadAsStringAsync();
+                var seatPage = JsonSerializer.Deserialize<CopilotSeats>(content)!;
+                seatPage.Enterprise = enterprise;
+                seatPage.Page = page;
+                seatPage.HasNextPage = !string.IsNullOrEmpty(url);
+                seatPage.LastUpdate = DateTime.UtcNow;
+                seatPage.Date = DateOnly.FromDateTime(DateTime.UtcNow);
+                seatPages.Add(seatPage);
+                page++;
+            }
+
+            seatPages.ForEach(seatPage =>
+            {
+                seatPage.TotalActiveSeats = seatPages.SelectMany(s => s.Seats).Count(seat => seat.LastActivityAt != null && seat.LastActivityAt > DateTime.UtcNow.AddDays(-30));
+            });
+
+            return seatPages;
+        }
+
+        public async Task<List<CopilotSeats>> GetOrganizationAssignedSeatsPagesAsync(string organization, string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogError("Token is null or empty");
+                throw new ArgumentNullException(nameof(token));
+            }
+            if (_httpClient.DefaultRequestHeaders.Contains("Authorization"))
+            {
+                _httpClient.DefaultRequestHeaders.Remove("Authorization");
+            }
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+            var url = $"/orgs/{organization}/copilot/billing/seats?per_page=100";
+            var page = 1;
+            var seatPages = new List<CopilotSeats>();
+            while (!string.IsNullOrEmpty(url))
+            {
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError($"Error fetching data: {response.StatusCode}", response.Content);
+                    throw new HttpRequestException($"Error fetching data: {response.StatusCode}");
+                }
+                url = Helpers.GetNextPageUrl(response.Headers);
+                var content = await response.Content.ReadAsStringAsync();
+                var seatPage = JsonSerializer.Deserialize<CopilotSeats>(content)!;
+                seatPage.Organization = organization;
+                seatPage.Page = page;
+                seatPage.HasNextPage = !string.IsNullOrEmpty(url);
+                seatPage.LastUpdate = DateTime.UtcNow;
+                seatPage.Date = DateOnly.FromDateTime(DateTime.UtcNow);
+                seatPages.Add(seatPage);
+                page++;
+            }
+
+            seatPages.ForEach(seatPage =>
+            {
+                seatPage.TotalActiveSeats = seatPages.SelectMany(s => s.Seats).Count(seat => seat.LastActivityAt != null && seat.LastActivityAt > DateTime.UtcNow.AddDays(-30));
+            });
+
+            return seatPages;
         }
     }
 }
