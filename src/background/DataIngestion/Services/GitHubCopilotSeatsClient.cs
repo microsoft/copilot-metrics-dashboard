@@ -198,9 +198,10 @@ namespace Microsoft.CopilotDashboard.DataIngestion.Services
                 page++;
             }
 
+            var totalActiveSeats = seatPages.SelectMany(s => s.Seats).Count(seat => seat.LastActivityAt != null && seat.LastActivityAt > DateTime.UtcNow.AddDays(-30));
             seatPages.ForEach(seatPage =>
             {
-                seatPage.TotalActiveSeats = seatPages.SelectMany(s => s.Seats).Count(seat => seat.LastActivityAt != null && seat.LastActivityAt > DateTime.UtcNow.AddDays(-30));
+                seatPage.TotalActiveSeats = totalActiveSeats;
             });
 
             return seatPages;
