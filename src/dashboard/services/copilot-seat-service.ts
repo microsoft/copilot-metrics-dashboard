@@ -103,7 +103,7 @@ const getDataFromDatabase = async (
       })
       .fetchAll();
 
-    // Garantee backwards compatibility with document that don't have the page property
+    // Guarantee backwards compatibility with documents that don't have the page property
     // Check if the resources array is empty, remove the page query and try again
     if (resources.length === 0 && querySpec.query.includes("c.page")) {
       querySpec.query = querySpec.query.replace(/ AND c.page = @page/, "");
