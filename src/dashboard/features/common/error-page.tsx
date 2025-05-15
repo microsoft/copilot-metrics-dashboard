@@ -26,21 +26,11 @@ export const ErrorPage = ({ error }: { error: string | ErrorDetails }) => {
             <AlertCircle className="h-5 w-5 text-destructive" />
             <CardTitle className="text-destructive">{title}</CardTitle>
           </div>
-          <CardDescription>
-          {errorDetails.message}
-          </CardDescription>
         </CardHeader>
         
         <CardContent className="pt-6">
           {errorDetails.message}
         </CardContent>
-        
-        <CardFooter className="flex justify-center border-t p-4">
-          <Button onClick={() => window.location.reload()} className="flex gap-2">
-            <RefreshCw className="h-4 w-4" />
-            Retry
-          </Button>
-        </CardFooter>
       </Card>
     </div>
   );

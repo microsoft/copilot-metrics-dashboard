@@ -166,10 +166,13 @@ export const computeActiveUserAverage = (
   return averageActiveUsers;
 };
 
-export const computeAdoptionRate = (seatManagement: any) => {
+export const computeAdoptionRate = (seatsData: any) => {
+  if (!seatsData || !seatsData.total_seats || seatsData.total_seats === 0) {
+    return 0;
+  }
   const adoptionRate =
-    (seatManagement.seat_breakdown.active_this_cycle /
-      seatManagement.seat_breakdown.total) *
+    (seatsData.total_active_seats /
+      seatsData.total_seats) *
     100;
   return adoptionRate;
 };
