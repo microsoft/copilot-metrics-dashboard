@@ -67,42 +67,16 @@ export interface CopilotSeatsData {
     id: string;
     date: string;
     total_seats: number;
+    total_active_seats: number;
     seats: SeatAssignment[];
     enterprise: string | null;
     organization: string | null;
+    page: number;
+    has_next_page: boolean;
     last_update: string | null;
 }
 
-export interface CopilotSeatManagementData {
-    id: string;
-    date: string;
-    total_seats: number;
-    seats: SeatManagement;
-    enterprise: string | null;
-    organization: string | null;
-    last_update: string | null;
-}
-
-export interface SeatBreakdown {
-    total: number;
-    added_this_cycle: number;
-    pending_invitation: number;
-    pending_cancellation: number;
-    active_this_cycle: number;
-    inactive_this_cycle: number;
-  }
-  
-  export interface SeatManagement {
-    seat_breakdown: SeatBreakdown;
-    seat_management_setting: string;
-    public_code_suggestions: string;
-    ide_chat: string;
-    platform_chat: string;
-    cli: string;
-    plan_type: string;
-  }
-
-  export interface CopilotUsage {
+export interface CopilotUsage {
     total_active_users: number;
     total_engaged_users: number;
     total_ide_engaged_users: number;
