@@ -21,7 +21,7 @@ export interface IProps {
 
 export default async function Dashboard(props: IProps) {
   const metricsPromise = getCopilotMetrics(props.searchParams);
-  const seatsPromise = getCopilotSeatsManagement({} as SeatServiceFilter);
+  const seatsPromise = getCopilotSeatsManagement({ date: props.searchParams.endDate, page: 1 } as SeatServiceFilter);
   const [metrics, seats] = await Promise.all([metricsPromise, seatsPromise]);
   const isCosmosDb = cosmosConfiguration();
 
@@ -36,7 +36,7 @@ export default async function Dashboard(props: IProps) {
   return (
     <DataProvider
       copilotUsages={metrics.response}
-      seatManagement={seats.response?.seats}
+      seatsData={seats.response}
     >
       <main className="flex flex-1 flex-col gap-4 md:gap-8 pb-8">
         <Header isCosmosDb={isCosmosDb}/>
