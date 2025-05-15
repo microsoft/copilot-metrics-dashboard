@@ -62,10 +62,9 @@ const columns: ColumnDef<SeatData>[] = [
 }));
 
 export const SeatsList = () => {
-    const { filteredData } = useDashboard();
-    const currentData = filteredData;
-    const hasOrganization = currentData?.seats.some((seat) => seat.organization);
-    const hasTeam = currentData?.seats.some((seat) => seat.assigning_team);
+    const { seatsData } = useDashboard();
+    const hasOrganization = seatsData?.seats.some((seat) => seat.organization);
+    const hasTeam = seatsData?.seats.some((seat) => seat.assigning_team);
     return (
         <Card className="col-span-4">
             <ChartHeader
@@ -75,7 +74,7 @@ export const SeatsList = () => {
             <CardContent>
                 <DataTable
                     columns={columns.filter((col) => col.id !== "organization" || hasOrganization)}
-                    data={(currentData?.seats ?? []).map((seat) => ({
+                    data={(seatsData?.seats ?? []).map((seat) => ({
                         user: seat.assignee.login,
                         organization: seat.organization?.login,
                         team: seat.assigning_team?.name,

@@ -21,7 +21,6 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
   let scope = process.env.GITHUB_API_SCOPE;
 
   if (stringIsNullOrEmpty(organization)) {
-    console.log("Missing required environment variable for organization");
     return {
       status: "ERROR",
       errors: [

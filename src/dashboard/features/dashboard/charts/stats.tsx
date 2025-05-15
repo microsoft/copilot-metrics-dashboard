@@ -10,10 +10,10 @@ import {
 import StatsCard from "./stats-card";
 
 export const Stats = () => {
-  const { seatManagement, filteredData } = useDashboard();
+  const { seatsData, filteredData } = useDashboard();
   const acceptanceAverage = computeCumulativeAcceptanceAverage(filteredData);
   const averageActiveUsers = computeActiveUserAverage(filteredData);
-  const adoptionRate = computeAdoptionRate(seatManagement);
+  const adoptionRate = computeAdoptionRate(seatsData);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 col-span-4">
@@ -48,9 +48,14 @@ export const Overview = () => {
     </div>
   );
 
-  const { seatManagement } = useDashboard();
-  const { total, active_this_cycle, inactive_this_cycle } =
-    seatManagement.seat_breakdown;
+  const { seatsData } = useDashboard();
+  let total_seats = 0;
+  let total_active_seats = 0;
+
+  if (seatsData && typeof seatsData.total_seats === "number" && typeof seatsData.total_active_seats === "number") {
+    total_seats = seatsData.total_seats;
+    total_active_seats = seatsData.total_active_seats;
+  }
 
   return (
     <Card className="col-span-1">
@@ -60,9 +65,9 @@ export const Overview = () => {
         tip={"The active seats are the seats where last activity is within the last 30 days. The inactive seats are the seats where last activity is null or older than 30 days."}
       />
       <CardContent className=" flex flex-col gap-2">
-        <Item label="Total seats" value={total} />
-        <Item label="Active seats" value={active_this_cycle} />
-        <Item label="Inactive seats" value={inactive_this_cycle} />
+        <Item label="Total seats" value={total_seats} />
+        <Item label="Active seats" value={total_active_seats} />
+        <Item label="Inactive seats" value={total_seats - total_active_seats} />
       </CardContent>
     </Card>
   );

@@ -7,11 +7,11 @@ import { formatDate } from "@/utils/helpers";
 import { proxy, useSnapshot } from "valtio";
 
 import { groupByTimeFrame } from "@/utils/data-mapper";
-import { SeatManagement } from "../common/models";
+import { CopilotSeatsData } from "../common/models";
 
 interface IProps extends PropsWithChildren {
   copilotUsages: CopilotUsageOutput[];
-  seatManagement: SeatManagement;
+  seatsData: CopilotSeatsData;
 }
 
 export interface DropdownFilterItem {
@@ -28,20 +28,20 @@ class DashboardState {
   public timeFrame: TimeFrame = "weekly";
   public hideWeekends: boolean = false;
 
-  public seatManagement: SeatManagement = {} as SeatManagement;
+  public seatsData: CopilotSeatsData = {} as CopilotSeatsData;
 
   private apiData: CopilotUsageOutput[] = [];
 
   public initData(
     data: CopilotUsageOutput[],
-    seatManagement: SeatManagement
+    seatsData: CopilotSeatsData
   ): void {
     this.apiData = [...data];
     this.filteredData = [...data];
     this.onTimeFrameChange(this.timeFrame);
     this.languages = this.extractUniqueLanguages();
     this.editors = this.extractUniqueEditors();
-    this.seatManagement = seatManagement;
+    this.seatsData = seatsData;
   }
 
   public filterLanguage(language: string): void {
@@ -187,8 +187,8 @@ export const useDashboard = () => {
 export const DataProvider = ({
   children,
   copilotUsages,
-  seatManagement,
+  seatsData,
 }: IProps) => {
-  dashboardStore.initData(copilotUsages, seatManagement);
+  dashboardStore.initData(copilotUsages, seatsData);
   return <>{children}</>;
 };

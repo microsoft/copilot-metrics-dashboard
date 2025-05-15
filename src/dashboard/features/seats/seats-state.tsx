@@ -14,24 +14,21 @@ export interface DropdownFilterItem {
   isSelected: boolean;
 }
 
-class DashboardState {
-  public filteredData: CopilotSeatsData = {} as CopilotSeatsData;
-
-  private apiData: CopilotSeatsData = {} as CopilotSeatsData;
+class SeatsState {
+  public seatsData: CopilotSeatsData = {} as CopilotSeatsData;
 
   public initData(
     data: CopilotSeatsData
   ): void {
-    this.apiData = data;
-    this.filteredData = data;
+    this.seatsData = data;
   }
 
 }
 
-export const dashboardStore = proxy(new DashboardState());
+export const dashboardStore = proxy(new SeatsState());
 
 export const useDashboard = () => {
-  return useSnapshot(dashboardStore, { sync: true }) as DashboardState;
+  return useSnapshot(dashboardStore, { sync: true }) as SeatsState;
 };
 
 export const DataProvider = ({

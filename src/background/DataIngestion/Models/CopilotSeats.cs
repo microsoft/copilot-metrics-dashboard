@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace Microsoft.CopilotDashboard.DataIngestion.Models;
 
-public class CopilotAssignedSeats
+public class CopilotSeats
 {
     /// <summary>
     /// Gets or sets the ID of the seats information.
@@ -34,6 +29,13 @@ public class CopilotAssignedSeats
     public int TotalSeats { get; set; }
 
     /// <summary>
+    /// Gets or sets the total number of active seats.
+    /// A seat is considered active if it has been used within the last 30 days.
+    /// </summary>
+    [JsonPropertyName("total_active_seats")]
+    public int TotalActiveSeats { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of seats.
     /// </summary>
     [JsonPropertyName("seats")]
@@ -52,6 +54,18 @@ public class CopilotAssignedSeats
     public string Organization { get; set; }
 
     /// <summary>
+    /// Gets or sets the page number.
+    /// </summary>
+    [JsonPropertyName("page")]
+    public int Page { get; set; }
+
+    /// <summary>
+    /// Gets or sets the flag indicating if there is a next page.
+    /// </summary>
+    [JsonPropertyName("has_next_page")]
+    public bool HasNextPage { get; set; }
+
+    /// <summary>
     /// Gets or sets the date and time of the last update.
     /// </summary>
     [JsonPropertyName("last_update")]
@@ -61,13 +75,13 @@ public class CopilotAssignedSeats
     {
         if (!string.IsNullOrWhiteSpace(this.Organization))
         {
-            return $"{this.Date.ToString("yyyy-MM-d")}-ORG-{this.Organization}";
+            return $"{this.Date.ToString("yyyy-MM-d")}-ORG-{this.Organization}-{this.Page}";
         }
         else if (!string.IsNullOrWhiteSpace(this.Enterprise))
         {
-            return $"{this.Date.ToString("yyyy-MM-d")}-ENT-{this.Enterprise}";
+            return $"{this.Date.ToString("yyyy-MM-d")}-ENT-{this.Enterprise}-{this.Page}";
         }
-        return $"{this.Date.ToString("yyyy-MM-d")}-XXX";
+        return $"{this.Date.ToString("yyyy-MM-d")}-XXX-{this.Page}";
     }
 }
 
