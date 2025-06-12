@@ -23,6 +23,9 @@ export const formatResponseError = (
       status = "NOT_FOUND";
       message = `Entity with the name ${entity} was not found.`;
       break;
+    case 422:
+      message = `Your organization has disabled Copilot Metrics API access for ${entity}. Enable it in GitHub settings to access this data.`;
+      break;
     case 429:
       message = `Too many requests. Rate limit exceeded for ${entity}. Please try again later.`;
       break;
