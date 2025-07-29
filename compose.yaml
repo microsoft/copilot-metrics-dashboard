@@ -1,0 +1,10 @@
+services:
+  copilot-metrics-dashboard:
+    build:
+      context: .
+      dockerfile: Containerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+
