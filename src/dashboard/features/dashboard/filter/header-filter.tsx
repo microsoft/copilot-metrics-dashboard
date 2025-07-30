@@ -20,12 +20,14 @@ export function Filters() {
         allItems={allEditors}
         onSelect={(e) => dashboardStore.filterEditor(e)}
       />{" "}
-      <DropdownFilter
-        name={"Team"}
-        allItems={allTeams}
-        onSelect={(e) => dashboardStore.filterTeam(e)}
-        onClose={() => dashboardStore.refreshTeamDataIfNeeded()}
-      />
+      {allTeams.length > 0 && (
+        <DropdownFilter
+          name={"Team"}
+          allItems={allTeams}
+          onSelect={(e) => dashboardStore.filterTeam(e)}
+          onClose={() => dashboardStore.refreshTeamDataIfNeeded()}
+        />
+      )}
       <Button
         variant={"secondary"}
         size={"icon"}

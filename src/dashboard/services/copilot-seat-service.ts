@@ -17,7 +17,7 @@ export interface IFilter {
 
 export const getCopilotSeats = async (
   filter: IFilter
-): Promise<ServerActionResponse<CopilotSeatsData>> => {
+): Promise<ServerActionResponse<CopilotSeatsData>> => {  
   const env = ensureGitHubEnvConfig();
   const isCosmosConfig = cosmosConfiguration();
 
@@ -40,10 +40,10 @@ export const getCopilotSeats = async (
         }
         break;
     }
-    if (isCosmosConfig) {
-      return getCopilotSeatsFromDatabase(filter);
+    if (isCosmosConfig) { 
+      return await getCopilotSeatsFromDatabase(filter);
     }
-    return getCopilotSeatsFromApi(filter);
+    return await getCopilotSeatsFromApi(filter);
   } catch (e) {
     return unknownResponseError(e);
   }
@@ -150,11 +150,11 @@ const getCopilotSeatsFromDatabase = async (
       };
     }
 
-    const seatsData = aggregateSeatsData(data.response, filter.team);
+    const seatsData = await aggregateSeatsData(data.response, filter.team);
 
     return {
       status: "OK",
-      response: seatsData as CopilotSeatsData,
+      response: seatsData,
     };
   } catch (e) {
     return unknownResponseError(e);
@@ -309,11 +309,11 @@ const getCopilotSeatsFromApi = async (
       };
     }
 
-    const seatsData = aggregateSeatsData(data.response, filter.team);
+    const seatsData = await aggregateSeatsData(data.response, filter.team);
 
     return {
       status: "OK",
-      response: seatsData as CopilotSeatsData,
+      response: seatsData,
     };
   } catch (e) {
     return unknownResponseError(e);
@@ -322,7 +322,7 @@ const getCopilotSeatsFromApi = async (
 
 export const getCopilotSeatsManagement = async (
   filter: IFilter
-): Promise<ServerActionResponse<CopilotSeatsData>> => {
+): Promise<ServerActionResponse<CopilotSeatsData>> => {  
   const env = ensureGitHubEnvConfig();
   const isCosmosConfig = cosmosConfiguration();
 
