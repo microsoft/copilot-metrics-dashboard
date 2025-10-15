@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { applyTimeFrameLabel } from "../services/helper";
-import { sampleData } from "../services/sample-data";
+import { applyTimeFrameLabel } from "@/utils/helpers";
+import { sampleData } from "@/services/sample-data";
 import { getActiveUsers } from "./common";
 
 describe("getActiveUsers", () => {
   it("correctly computes the total active users from provided data", () => {
-    const expectedTotalActiveUsers = [4, 10]; // From the sample data provided
+    const expectedTotalActiveUsers = [24]; // From the sample data provided (one entry with 24 active users)
     const data = applyTimeFrameLabel(sampleData);
     const actual = getActiveUsers(data).map((item) => item.totalUsers);
     expect(actual).toEqual(expectedTotalActiveUsers);
