@@ -15,7 +15,7 @@
 
 # Introduction
 
-The GitHub Copilot Metrics Dashboard is a solution accelerator designed to visualize metrics from GitHub Copilot using the [GitHub Copilot Metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-metrics?apiVersion=2022-11-28) and [GitHub Copilot User Management API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-user-management?apiVersion=2022-11-28).
+The GitHub Copilot Metrics Dashboard is a solution accelerator designed to visualize metrics from GitHub Copilot using the [Copilot usage-metrics report API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-metrics?apiVersion=2022-11-28) (`/copilot/metrics/reports/users-28-day/latest`) and the [GitHub Copilot User Management API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-user-management?apiVersion=2022-11-28). See [docs/metrics-ingestion.md](docs/metrics-ingestion.md) for a detailed explanation of how raw report data is fetched and aggregated.
 
 ## Dashboard
 
@@ -58,16 +58,15 @@ To run the dashboard on your local machine, head to the **dashboard** folder und
 ```
 #### Environment Variables
 
-You will be required to enter the following information in an **.env** file:
+Copy `src/dashboard/.env.example` to `src/dashboard/.env` and fill in the following:
 
-```
-- GitHub Enterprise name
-- GitHub Organization name
-- GitHub Token
-- GitHub API Scope
-```
-
-You can use the **.env.example** file as a reference. GitHub API Scope defines the GITHUB_API_SCOPE environment variable and can be set to either "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
+| Variable | Required | Description |
+|---|---|---|
+| `GITHUB_API_SCOPE` | No (default: `organization`) | `organization` or `enterprise` — sets the API scope. |
+| `GITHUB_ORGANIZATION` | When scope is `organization` | Your GitHub org slug. |
+| `GITHUB_ENTERPRISE` | When scope is `enterprise` | Your GitHub enterprise slug. |
+| `GITHUB_TOKEN` | Yes | PAT with `read:org`, `read:user`, and `copilot` scopes (add `read:enterprise` for enterprise scope). |
+| `GITHUB_API_VERSION` | Yes | GitHub API version — use `2022-11-28`. |
 
 #### Install & Run
 
@@ -118,16 +117,16 @@ The following steps will automatically provision Azure resources and deploy the 
 
 You will be prompted to provide the following information:
 
-```
-- GitHub Enterprise name
-- GitHub Organization name
-- GitHub Token
-- GitHub API Scope
-```
+| Variable | Required | Description |
+|---|---|---|
+| `GITHUB_API_SCOPE` | No (default: `organization`) | `organization` or `enterprise`. |
+| `GITHUB_ORGANIZATION` | When scope is `organization` | Your GitHub org slug. |
+| `GITHUB_ENTERPRISE` | When scope is `enterprise` | Your GitHub enterprise slug. |
+| `GITHUB_TOKEN` | Yes | PAT — see [Token Requirements](infra/README.md#github-token-requirements). |
 
-> More details here for the [GA Metrics API](https://github.blog/changelog/2024-10-30-github-copilot-metrics-api-ga-release-now-available/)
+> **Note:** The Azure deployment (Bicep) still prompts for **both** org and enterprise names even though only one is used at runtime. Set the unused value to a placeholder (e.g. `n/a`) if your scope doesn't require it.
 
-GitHub API Scope defines the GITHUB_API_SCOPE environment variable and can be set to either "enterprise" or "organization". It is used to define at which level the GitHub APIs will gather data. If not specified, the default value is "organization".
+> More details for the [Copilot usage-metrics API](https://docs.github.com/en/enterprise-cloud@latest/rest/copilot/copilot-metrics?apiVersion=2022-11-28) and the [GA announcement](https://github.blog/changelog/2024-10-30-github-copilot-metrics-api-ga-release-now-available/).
 
 1. Download the [Azure Developer CLI](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/overview)
 2. If you have not cloned this repo, run `azd init -t microsoft/copilot-metrics-dashboard`. If you have cloned this repo, just run 'azd init' from the repo root directory.

@@ -42,10 +42,10 @@ The Cosmos DB database (`platform-engineering`) contains three containers:
 |-----------|-------------|---------|
 | `name` | Environment name (1-64 chars) | `copilot-metrics-prod` |
 | `location` | Azure region | `eastus` |
-| `githubEnterpriseName` | GitHub Enterprise name | `contoso` |
-| `githubOrganizationName` | GitHub Organization name | `contoso-engineering` |
-| `githubAPIScope` | API scope (`enterprise` or `organization`) | `organization` |
-| `githubToken` | GitHub Personal Access Token (secure) | `ghp_xxxxx` |
+| `githubEnterpriseName` | GitHub Enterprise slug — **required by the Bicep template**; if `githubAPIScope` is `organization` this value is stored but not used at runtime (set it to a placeholder such as `n/a`) | `contoso` |
+| `githubOrganizationName` | GitHub Organization slug — **required by the Bicep template**; if `githubAPIScope` is `enterprise` this value is stored but not used at runtime (set it to a placeholder such as `n/a`) | `contoso-engineering` |
+| `githubAPIScope` | API scope (`enterprise` or `organization`) — determines which of the two values above is actually used | `organization` |
+| `githubToken` | GitHub Personal Access Token (secure) — see [Token Requirements](#github-token-requirements) | `ghp_xxxxx` |
 
 ### Optional Parameters
 
@@ -83,9 +83,14 @@ The GitHub Personal Access Token must have the following scopes:
 azd init
 
 # Set environment variables
-azd env set GITHUB_ENTERPRISE_NAME "your-enterprise"
-azd env set GITHUB_ORGANIZATION_NAME "your-organization"
+# Set the scope to 'organization' or 'enterprise'
 azd env set GITHUB_API_SCOPE "organization"
+
+# Set the org slug (required when scope is 'organization'; use a placeholder for 'enterprise')
+azd env set GITHUB_ORGANIZATION_NAME "your-organization"
+azd env set GITHUB_ENTERPRISE_NAME "n/a"
+
+# Set the GitHub PAT and API version
 azd env set GITHUB_TOKEN "your-github-token"
 
 # Deploy to Azure

@@ -18,9 +18,23 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
   const enterprise = process.env.GITHUB_ENTERPRISE;
   const token = process.env.GITHUB_TOKEN;
   const version = process.env.GITHUB_API_VERSION;
-  let scope = process.env.GITHUB_API_SCOPE;
+  const scope = process.env.GITHUB_API_SCOPE || "organization";
 
-  if (stringIsNullOrEmpty(organization)) {
+  if (validateScope(scope)) {
+    return {
+      status: "ERROR",
+      errors: [
+        {
+          message:
+            "Invalid GitHub API scope: " +
+            scope +
+            ". Value must be 'enterprise' or 'organization'",
+        },
+      ],
+    };
+  }
+
+  if (scope === "organization" && stringIsNullOrEmpty(organization)) {
     return {
       status: "ERROR",
       errors: [
@@ -31,7 +45,7 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
     };
   }
 
-  if (stringIsNullOrEmpty(enterprise)) {
+  if (scope === "enterprise" && stringIsNullOrEmpty(enterprise)) {
     return {
       status: "ERROR",
       errors: [
@@ -66,29 +80,11 @@ export const ensureGitHubEnvConfig = (): ServerActionResponse<GitHubConfig> => {
     };
   }
 
-  if (validateScope(scope)) {
-    return {
-      status: "ERROR",
-      errors: [
-        {
-          message:
-            "Invalid GitHub API scope: " +
-            scope +
-            ". Value must be 'enterprise' or 'organization'",
-        },
-      ],
-    };
-  }
-
-  if (stringIsNullOrEmpty(scope)) {
-    scope = "organization";
-  }
-
   return {
     status: "OK",
     response: {
-      organization,
-      enterprise,
+      organization: organization || "",
+      enterprise: enterprise || "",
       token,
       version,
       scope,
